@@ -6,7 +6,7 @@
 
 ここからは 2 次元・相互作用あり（$g=1$）の GP 方程式で、**量子渦**を扱います。今回は、渦と反渦のペア（**渦対＝ダイポール**）が、互いの作る流れに乗って**一定速度で並進する**様子を計算します。
 
-| 密度 $|\psi|^2$ | 位相 $\arg\psi$ |
+| 密度 $\lvert\psi\rvert^2$ | 位相 $\arg\psi$ |
 |:---:|:---:|
 | <img src="../figures/03_vortexDipole_realTime/density.gif" width="360"> | <img src="../figures/03_vortexDipole_realTime/phase.gif" width="360"> |
 

@@ -91,7 +91,7 @@ $$
 | # | 変更点 | 中身 |
 |---|--------|------|
 | ① | **場を1本→2本に** | 複素数 $\psi=u+iv$ を、実スカラー場 `Psire`($u$) と `Psiim`($v$) の2本で表す |
-| ② | **式を拡散→GPの連立に** | $H\phi\equiv-D\nabla^2\phi+W\phi$、$W=V_\mathrm{ext}+g|\psi|^2$ とすると $\partial_t u=+Hv,\ \partial_t v=-Hu$ |
+| ② | **式を拡散→GPの連立に** | $H\phi\equiv-D\nabla^2\phi+W\phi$、$W=V_\mathrm{ext}+g\lvert\psi\rvert^2$ とすると $\partial_t u=+Hv,\ \partial_t v=-Hu$ |
 | ③ | **実時間はCrank–Nicolsonに** | 前進オイラーは発散する（後述）。台形則でノルム保存させる |
 | ④ | **虚時間モードを追加** | 完全陰的な拡散＋規格化。初期状態（基底状態・ソリトン）を作る |
 

@@ -22,7 +22,7 @@
 - 設定：$[-16,16]^2$・$128^2$・周期境界、$\Delta t=0.005$、$t\le60$。
 - 初期は $\tanh$ の溝 2 本＋横方向 cos 摂動（第1回で示した `#codeStream`）、$\psi_\mathrm{im}=0$。
 
-| 密度 $|\psi|^2$ | 位相 $\arg\psi$ |
+| 密度 $\lvert\psi\rvert^2$ | 位相 $\arg\psi$ |
 |:---:|:---:|
 | <img src="../figures/01_darkSoliton_realTime/density.gif" width="360"> | <img src="../figures/01_darkSoliton_realTime/phase.gif" width="360"> |
 
