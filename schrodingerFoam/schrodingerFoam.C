@@ -84,6 +84,26 @@ int main(int argc, char *argv[])
     const scalar releaseTime =
         gpProperties.getOrDefault<scalar>("releaseTime", GREAT);
 
+    // Optional: subtract a chemical potential in realTime, i.e. integrate
+    //     i d(Psi)/dt = (H - mu) Psi
+    // instead of i d(Psi)/dt = H Psi. This moves to the frame co-rotating with
+    // the background global phase e^{-i mu t}, so the PHASE field stops
+    // flickering; the density and all vortex/soliton dynamics are unchanged.
+    // How mu is chosen (select the option in constant/gpProperties):
+    //   * dynamicMu true          -> recompute mu = <Psi|H|Psi>/<Psi|Psi> each
+    //                                step (use when mu is not known, e.g. traps)
+    //   * dynamicMu false + muShift-> subtract the fixed constant muShift
+    //                                (e.g. g*n0 for a uniform bulk)
+    // Defaults (dynamicMu false, muShift 0) reproduce plain i dPsi/dt = H Psi.
+    const bool dynamicMu =
+        gpProperties.getOrDefault<bool>("dynamicMu", false);
+    const dimensionedScalar muShift
+    (
+        "muShift",
+        dimensionSet(0, 0, -1, 0, 0, 0, 0),
+        gpProperties.getOrDefault<scalar>("muShift", 0.0)
+    );
+
     Info<< "Solver mode: " << mode << nl << endl;
 
     // ------------------------------------------------------------------- //
@@ -151,9 +171,31 @@ int main(int argc, char *argv[])
             const volScalarField Psire0(Psire);
             const volScalarField Psiim0(Psiim);
 
+            // Chemical potential to subtract this step (frame co-rotating with
+            // the background phase e^{-i mu t}). Either a fixed constant or the
+            // instantaneous mu = <Psi|H|Psi>/<Psi|Psi> at the start of the step.
+            dimensionedScalar muEff("muEff", dimensionSet(0, 0, -1, 0, 0, 0, 0), 0.0);
+            if (dynamicMu)
+            {
+                const volScalarField Wmu(Vnow + g*(sqr(Psire0) + sqr(Psiim0)));
+                const volScalarField Hre0(-D*fvc::laplacian(Psire0) + Wmu*Psire0);
+                const volScalarField Him0(-D*fvc::laplacian(Psiim0) + Wmu*Psiim0);
+                const dimensionedScalar num =
+                    fvc::domainIntegrate(Psire0*Hre0 + Psiim0*Him0);
+                const dimensionedScalar den =
+                    fvc::domainIntegrate(sqr(Psire0) + sqr(Psiim0));
+                muEff = num/den;
+            }
+            else
+            {
+                muEff = muShift;
+            }
+
+            // W already carries the -muEff term, so H = -D lap + W integrates
+            // (H - muEff) Psi with no other change to the scheme.
             const volScalarField W0
             (
-                Vnow + g*(sqr(Psire0) + sqr(Psiim0))
+                Vnow + g*(sqr(Psire0) + sqr(Psiim0)) - muEff
             );
             const volScalarField Hv0(-D*fvc::laplacian(Psiim0) + W0*Psiim0);
             const volScalarField Hu0(-D*fvc::laplacian(Psire0) + W0*Psire0);
@@ -164,14 +206,14 @@ int main(int argc, char *argv[])
             {
                 volScalarField W
                 (
-                    Vnow + g*(sqr(Psire) + sqr(Psiim))
+                    Vnow + g*(sqr(Psire) + sqr(Psiim)) - muEff
                 );
                 const volScalarField Hv(-D*fvc::laplacian(Psiim) + W*Psiim);
 
                 Psire = Psire0 + 0.5*dt*(Hv + Hv0);
                 Psire.correctBoundaryConditions();
 
-                W = Vnow + g*(sqr(Psire) + sqr(Psiim));
+                W = Vnow + g*(sqr(Psire) + sqr(Psiim)) - muEff;
                 const volScalarField Hu(-D*fvc::laplacian(Psire) + W*Psire);
 
                 Psiim = Psiim0 - 0.5*dt*(Hu + Hu0);
@@ -180,6 +222,7 @@ int main(int argc, char *argv[])
 
             Info<< "  norm = "
                 << fvc::domainIntegrate(sqr(Psire) + sqr(Psiim)).value()
+                << ",  muShift = " << muEff.value()
                 << endl;
         }
         else

@@ -167,12 +167,25 @@ $$
 
 これは大域位相の回転と一緒に回る**回転系（co-rotating frame）**へ移る操作で、背景の位相が止まり、位相図は**渦核やソリトンの位相構造だけ**がくっきり見えるようになります。密度 $\lvert\psi\rvert^2$ は大域位相に不変なので、密度アニメには元々チラつきは出ません（チラつくのは位相図だけ）です。
 
-本ソルバの `realTime` は既定では $i\partial_t\psi=H\psi$（$\mu$ を引かない素の形）で解いているため、位相図が点滅します。位相をきれいに見せたいときは、次のどちらかで $H\to H-\mu$ にすれば同じ効果が得られます（**物理＝密度・渦の運動は一切変わりません**）。
+本ソルバの `realTime` は既定では $i\partial_t\psi=H\psi$（$\mu$ を引かない素の形）で解いているため、位相図が点滅します。位相をきれいに見せたいときは、`constant/gpProperties` で**化学ポテンシャルを考慮するオプション**を選べます（**物理＝密度・渦の運動は一切変わりません**）。
 
-- **動的に求める**：`imaginaryTime` と同じ要領で毎ステップ $\mu=\langle\psi|H|\psi\rangle/\langle\psi|\psi\rangle$ を計算し、$W\to W-\mu$ とする。トラップ系などμが自明でないときに有効。
-- **定数を引く**：背景が一様な系（ダークソリトンや渦）では $\mu=g\,n_0$ が既知なので、`gpProperties` に `muShift`（既定 0）を足して $W\to W-\mu_\text{shift}$ とするのが簡単。後方互換も保てます。
+```c
+// (A) 引かない：既定。i dPsi/dt = H Psi（後方互換）
+dynamicMu       false;
+muShift         0.0;
 
-> 実装メモ：`schrodingerFoam.C` の `realTime` ブロックで、`W`（$=V_\mathrm{ext}+g\lvert\psi\rvert^2$）を評価している箇所すべてを `W - muShift`（または動的 `mu`）に置き換えるだけです。虚時間側はすでに $W-\mu$ を解いているので変更不要です。
+// (B) 定数を引く：一様背景（渦・ダークソリトン）は mu = g*n0 = 1 が既知
+dynamicMu       false;
+muShift         1.0;
+
+// (C) 動的に求める：毎ステップ mu = <Psi|H|Psi>/<Psi|Psi> を計算（トラップ系向き）
+dynamicMu       true;    // muShift は無視される
+```
+
+- **(B) 定数 `muShift`**：背景が一様な系（ダークソリトンや渦）では $\mu=g\,n_0$ が既知なので、この値を引くのが簡単・安定。
+- **(C) `dynamicMu true`**：`imaginaryTime` と同じ要領で毎ステップ $\mu=\langle\psi|H|\psi\rangle/\langle\psi|\psi\rangle$ を計算して引く。$\mu$ が自明でないトラップ系などで有効。
+
+内部的には `realTime` の $W\ (=V_\mathrm{ext}+g\lvert\psi\rvert^2)$ を $W-\mu$ に置き換えているだけで、Crank–Nicolson の枠組みはそのままです（虚時間側はもともと $W-\mu$ を解いているので変更なし）。実行ログには各ステップの `muShift =` が表示されます。
 
 ## フォルダ構成
 
@@ -381,6 +394,35 @@ convergenceTol  0;                          // 場が変化しなくなったら
 ```
 
 `mode` を `imaginaryTime` にすれば、同じソルバが虚時間発展（初期状態づくり）に変わります。
+
+### 虚時間発展・実時間発展の使い分け（設定と実行）
+
+同じソルバ・同じ実行コマンドのまま、`mode` を替えるだけで2つの計算を切り替えられます。設定の要点と実行方法を並べます。
+
+| 項目 | 虚時間発展（初期状態づくり） | 実時間発展（本計算） |
+|------|------------------------------|----------------------|
+| `mode` | `imaginaryTime` | `realTime` |
+| 目的 | 基底状態・ソリトン背景を作る | 現象を時間発展させる |
+| `normalize` | `true`（粒子数を固定） | `false` |
+| `targetNorm` | 目標ノルム（例 `20`） | 使わない |
+| `convergenceTol` | `1e-5` など（収束で自動停止） | `0`（最後まで回す） |
+| `nCorrectors` | 使わない（完全陰的） | `4`（Crank–Nicolson 反復） |
+| `muShift`／`dynamicMu` | 内部で $\mu$ を自動計算 | 位相可視化に応じて任意（前節） |
+| 時間刻み | 大きく取れる（$\Delta\tau$ 大） | $\Delta t\lesssim\Delta x^2/D$ |
+
+実行コマンドは**どちらのモードも同じ**です（`mode` の値だけ違う）。
+
+```bash
+# openfoam2512 環境の中で
+cd run/<ケース名>
+blockMesh          # メッシュ生成（初回のみ）
+schrodingerFoam    # constant/gpProperties の mode に従って計算
+```
+
+- **虚時間**：ログに毎ステップ `mu` と `norm` が表示され、`convergenceTol` を下回ると `Converged` と出て**自動停止**します。得られた最終時刻の場が「作った初期状態」です。
+- **実時間**：ログに毎ステップ `norm`（と `muShift`）が表示され、`endTime` まで回ります。ノルムが一定なら安定に解けている証拠です。
+
+**典型的な2段階の流れ**は「①虚時間で初期状態を作る → ②その場を出発点に `mode` を `realTime` に替えて本計算」です（実例は第5回）。本シリーズの多くのケースは初期状態を `#codeStream` で直接与えているため①を省けますが、トラップ基底状態のように解析形が面倒なときは虚時間で作ります。
 
 ### `system/blockMeshDict` — メッシュ
 

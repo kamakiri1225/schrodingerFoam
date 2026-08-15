@@ -30,4 +30,13 @@ targetNorm      1.0;
 // Stop when the field stops changing (imaginaryTime relaxation). 0 = never.
 convergenceTol  0;
 
+// Chemical-potential subtraction in realTime: solve i dPsi/dt = (H - mu) Psi
+// to move into the frame co-rotating with the background phase e^{-i mu t},
+// so the PHASE plot no longer flickers. Density/vortex dynamics are unchanged.
+//   dynamicMu true  -> recompute mu = <Psi|H|Psi>/<Psi|Psi> each step
+//   dynamicMu false -> subtract the constant muShift below
+// Uniform bulk here has n0 = 1, g = 1, so mu = g*n0 = 1.
+dynamicMu       false;
+muShift         1.0;
+
 // ************************************************************************* //
