@@ -1,0 +1,61 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| Psire -- anisotropic 2D harmonic-oscillator ground state                    |
+| psi = (omegaX*omegaY)^1/4/sqrt(pi) exp[-(omegaX*x^2+omegaY*y^2)/2]          |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version 2.0; format ascii; class volScalarField; object Psire;
+}
+
+dimensions [0 0 0 0 0 0 0];
+
+internalField #codeStream
+{
+    codeInclude
+    #{
+        #include "fvCFD.H"
+    #};
+    codeOptions
+    #{
+        -I$(LIB_SRC)/finiteVolume/lnInclude -I$(LIB_SRC)/meshTools/lnInclude
+    #};
+    codeLibs
+    #{
+        -lfiniteVolume -lmeshTools
+    #};
+    code
+    #{
+        const IOdictionary& d = static_cast<const IOdictionary&>(dict);
+        const fvMesh& mesh = refCast<const fvMesh>(d.db());
+
+        // sigmaX = 1/sqrt(2*omegaX) = 4.0
+        const scalar omegaX = 0.03125;
+        const scalar omegaY = 2.0;
+        const scalar A =
+            Foam::pow(omegaX*omegaY, 0.25)
+           /Foam::sqrt(constant::mathematical::pi);
+
+        scalarField psi(mesh.nCells());
+        forAll(psi, i)
+        {
+            const scalar x = mesh.C()[i].x();
+            const scalar y = mesh.C()[i].y();
+            psi[i] = A*Foam::exp
+            (
+                -0.5*(omegaX*sqr(x) + omegaY*sqr(y))
+            );
+        }
+        psi.writeEntry("", os);
+    #};
+};
+
+boundaryField
+{
+    left         { type fixedValue; value uniform 0; }
+    right        { type fixedValue; value uniform 0; }
+    down         { type fixedValue; value uniform 0; }
+    up           { type fixedValue; value uniform 0; }
+    frontAndBack { type empty; }
+}
+
+// ************************************************************************* //

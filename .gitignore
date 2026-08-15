@@ -13,6 +13,7 @@ run/*/log.*
 # animation frame sequences (keep only the compressed .gif)
 run/*/ani/
 figures/*/frames/
+figures/*/*frames/
 
 # ---- solver build artifacts ----
 schrodingerFoam/Make/*/
@@ -22,7 +23,8 @@ schrodingerFoam/lnInclude/
 **/linux*Opt/
 
 # ---- heavy reference material (downloadable elsewhere) ----
-docs/
+docs/*
+!docs/research_plan_2D_quantum_turbulence_free_expansion.md
 figures/00_reference/ref_kamakiri_animate_full.gif
 
 # ---- misc ----

@@ -1,0 +1,31 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| gpProperties -- 1D harmonic oscillator, coherent-state oscillation           |
+|                 linear Schroedinger (g = 0), real-time evolution             |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      gpProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Kinetic coefficient  D = hbar / (2 m)  (dimensionless value 0.5)
+D               D  [0 2 -1 0 0 0 0]  0.5;
+
+// No interaction: pure (linear) single-particle Schroedinger equation
+g               g  [0 0 -1 0 0 0 0]  0.0;
+
+// Real-time (unitary) evolution
+mode            realTime;
+
+// Crank-Nicolson Picard iterations
+nCorrectors     4;
+
+normalize       false;
+targetNorm      1.0;
+
+convergenceTol  0;
+
+// ************************************************************************* //

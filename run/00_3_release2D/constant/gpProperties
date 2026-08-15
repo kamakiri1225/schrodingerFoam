@@ -1,0 +1,20 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| gpProperties -- anisotropic 2D harmonic ground state, released at t = 2    |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version 2.0; format ascii; class dictionary; object gpProperties;
+}
+
+D D [0 2 -1 0 0 0 0] 0.5;
+g g [0 0 -1 0 0 0 0] 0.0;
+mode realTime;
+nCorrectors 4;
+normalize false;
+targetNorm 1.0;
+convergenceTol 0;
+
+// Switch Vext off for every step at t >= releaseTime.
+releaseTime 2.0;
+
+// ************************************************************************* //

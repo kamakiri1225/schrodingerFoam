@@ -1,0 +1,73 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| Psire -- real part of a rightward-moving Gaussian wave packet                 |
+|   psi(x,0) = A exp(-(x-x0)^2 / (4 sigma^2)) exp(i k0 x)                       |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      Psire;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 0 0 0 0 0 0];
+
+internalField   #codeStream
+{
+    codeInclude
+    #{
+        #include "fvCFD.H"
+    #};
+    codeOptions
+    #{
+        -I$(LIB_SRC)/finiteVolume/lnInclude -I$(LIB_SRC)/meshTools/lnInclude
+    #};
+    codeLibs
+    #{
+        -lfiniteVolume -lmeshTools
+    #};
+    code
+    #{
+        const IOdictionary& d = static_cast<const IOdictionary&>(dict);
+        const fvMesh& mesh = refCast<const fvMesh>(d.db());
+
+        const scalar x0    = -15.0;  // initial centre
+        const scalar sigma = 2.0;    // packet width
+        const scalar k0    = 1.5;    // mean wavenumber (group velocity = k0)
+        const scalar A     = Foam::pow(2.0*constant::mathematical::pi*sigma*sigma, -0.25);
+
+        scalarField psi(mesh.nCells());
+        forAll(psi, i)
+        {
+            const scalar x  = mesh.C()[i].x();
+            const scalar env = A*Foam::exp(-sqr(x - x0)/(4.0*sigma*sigma));
+            psi[i] = env*Foam::cos(k0*x);
+        }
+        psi.writeEntry("", os);
+    #};
+};
+
+boundaryField
+{
+    left
+    {
+        type            fixedValue;
+        value           uniform 0;
+    }
+    right
+    {
+        type            fixedValue;
+        value           uniform 0;
+    }
+    emptyY
+    {
+        type            empty;
+    }
+    frontAndBack
+    {
+        type            empty;
+    }
+}
+
+// ************************************************************************* //

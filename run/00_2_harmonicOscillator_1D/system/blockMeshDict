@@ -1,0 +1,86 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| blockMeshDict -- 1D line mesh for the harmonic oscillator                    |
+|   x is the physical axis; y and z are single-cell "empty" directions         |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+scale   1;
+
+xmin   -12;
+xmax    12;
+dy      3;     // single cell, but stretched wide so the 1D strip is easy to see
+dz      0.1;   // single-cell thickness (empty direction)
+
+nx      240;   // dx = 24/240 = 0.1
+
+vertices
+(
+    ($xmin  0    0 )   // 0
+    ($xmax  0    0 )   // 1
+    ($xmax  $dy  0 )   // 2
+    ($xmin  $dy  0 )   // 3
+    ($xmin  0    $dz)  // 4
+    ($xmax  0    $dz)  // 5
+    ($xmax  $dy  $dz)  // 6
+    ($xmin  $dy  $dz)  // 7
+);
+
+blocks
+(
+    hex (0 1 2 3 4 5 6 7) ($nx 1 1) simpleGrading (1 1 1)
+);
+
+edges
+(
+);
+
+boundary
+(
+    left
+    {
+        type            patch;
+        faces
+        (
+            (0 4 7 3)
+        );
+    }
+    right
+    {
+        type            patch;
+        faces
+        (
+            (1 2 6 5)
+        );
+    }
+    emptyY
+    {
+        type            empty;
+        faces
+        (
+            (0 1 5 4)
+            (3 7 6 2)
+        );
+    }
+    frontAndBack
+    {
+        type            empty;
+        faces
+        (
+            (0 3 2 1)
+            (4 5 6 7)
+        );
+    }
+);
+
+mergePatchPairs
+(
+);
+
+// ************************************************************************* //

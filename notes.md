@@ -40,7 +40,9 @@ rep.pdf 後半で扱われている、符号の異なる2つの非線形項で�
 
 ### GP 方程式（無次元・一様系, 外部ポテンシャルなし）
 
-$$ i\,\partial_t \psi = -\tfrac{1}{2}\nabla^2\psi + g\,|\psi|^2\psi \quad(+\,V_\mathrm{ext}\psi)$$
+$$
+i\,\partial_t \psi = -\tfrac{1}{2}\nabla^2\psi + g\,|\psi|^2\psi \quad(+\,V_\mathrm{ext}\psi)
+$$
 
 - 背景密度 $n_0=|\psi_\infty|^2$、化学ポテンシャル $\mu=g n_0$、ヒーリング長 $\xi=1/\sqrt{2\mu}$（$\hbar=m=1$）。
 - クリーンな無次元化として **$g=1,\ n_0=1,\ \xi=1$** を採用予定（kamakiri の Fortran は $a=7.2\times10^3$ の別スケール。OpenFOAM 版は $\xi\sim O(1)$ に揃えた方がメッシュ設計が楽）。
@@ -504,6 +506,58 @@ $x$ 方向には小さな一様過渡応答があるが、snake instability の�
 自動的に崩壊することは別だと確認できた。**不安定モードを励起する seed が必要**であり、
 白色ノイズケースの崩壊は数値解法が勝手に作った横方向破れではない。
 
+## 6.14 2次元トラップ解放：量子と古典はどう違うか
+
+`run/00_3_release2D` では、異方性調和トラップの2次元ガウス基底状態を $t=2$ で解放した。
+初期密度幅を $(\sigma_x,\sigma_y)=(4,0.5)$ と極端な横長にした。狭く閉じ込められていた
+y方向ほど速く膨張し、$t\approx6$ でほぼ円形、$t=10$ では縦長になる。OpenFOAMの最終幅
+$(\sigma_x,\sigma_y)=(4.123,7.786)$ は解析値 $(4.123,8.016)$ とy方向2.9%以内で一致した。
+$t=10$ では波束の裾がy境界へ達するため、外縁に弱い反射縞が生じる。
+
+### 「古典なら膨張しない」は半分だけ正しい
+
+解放時にすべての古典粒子が静止していれば、解放後は力も速度も0なので粒子は動かず、分布は
+膨張しない。一方、量子基底状態は実波動関数なので確率流
+$\boldsymbol j=\mathrm{Im}(\psi^*\nabla\psi)$ は0だが、運動量そのものが0に確定しているわけではない。
+位置を狭く閉じ込めた方向ほど運動量幅が広い。トラップを切ると、この**零点運動量の幅**が
+位置の広がりへ変換される。
+
+初期形状を公平に比較するため、アニメ中央では量子と同じ位置幅 $(4,0.5)$ を用い、
+解放時に等方的な速度幅
+$$
+\sigma_{v_x}=\sigma_{v_y}=1
+$$
+を与えた。解放後の幅は
+$$
+\sigma_j^2(\tau)=\sigma_{j0}^2+\tau^2
+$$
+なので、長時間後には方向によらない第2項が支配し、$\sigma_x/\sigma_y\to1$。$t=10$ では
+$(8.94,8.02)$ となり、ほぼ円形になる。この古典ケースは初期位置分布を揃えるため解放前に
+固定した比較用スナップショットであり、同じトラップ内の古典熱平衡そのものではない。
+
+参考として、通常の古典熱平衡を同じ異方性トラップ・$k_BT/m=1$ で作る場合は
+$\sigma_{j0}=1/\omega_j$ なので初期幅が $(32,0.5)$ となり、量子の初期幅とは一致しない。
+
+![量子と古典のトラップ解放比較](figures/00_3_release2D/quantum_vs_classical.gif)
+
+左はOpenFOAM量子計算、中央は同じ初期密度に等方速度分散を与えた古典集団、右は解放時に
+全粒子を静止させた古典集団。量子は縦長へ反転し、等方速度の古典集団は円形へ近づき、
+静止集団は膨張しない。
+
+> **結論**：量子基底状態は零点運動量幅が異方的なので縦横比が反転する。一方、単一温度の
+> 古典熱平衡集団は速度幅が等方的なので円形へ近づく。なお、量子基底状態のWigner分布に合わせて
+> 古典速度幅を人為的に異方化すれば量子と同じ膨張も作れるが、それは通常の等分配集団ではない。
+
+## 6.15 次期研究：2次元量子乱流BECの自由膨張
+
+渦なしの線形波束解放を基準として、次は $g>0$ の相互作用BEC、単一渦、少数渦対を検証し、
+最終的に動的生成した2次元量子乱流を異方的トラップから解放する。総渦数だけでなく、偏極度、
+双極子率、クラスタリング、圧縮性・非圧縮性エネルギーと膨張アスペクト比の関係を調べる。
+
+先行研究、暫定的な研究ギャップ、評価式、ケース構成、数値検証条件は
+[`docs/research_plan_2D_quantum_turbulence_free_expansion.md`](docs/research_plan_2D_quantum_turbulence_free_expansion.md)
+に整理した。
+
 ## 7. 環境メモ
 
 - インストール済み: `/usr/lib/openfoam/` に **openfoam2406 / openfoam2506 / openfoam2512** が併存。他に `/opt/openfoam13`（Foundation）。
@@ -522,12 +576,16 @@ $x$ 方向には小さな一様過渡応答があるが、snake instability の�
 - 2026-08-14: `figures/` を 00_reference / 01_ / 02_ / 03_ の連番に再編。各 run ケースに README.md（仕様書）を追加。GIF 作成手順を本メモに記載。
 - 2026-08-15: case 04 対照実験（摂動なし）を $t=150$ まで実行。$y$ 方向偏差 0、ノルム 224 を維持し、崩壊しないことを確認。
 - 2026-08-15: case 04 白色ノイズありを $t=150$ まで完走。ソリトン縞の崩壊と多数の渦核を確認し、摂動なしとの比較GIFをX投稿用に圧縮生成。
+- 2026-08-15: case 00_3（異方性2Dガウスのトラップ解放）を追加。$t=2$ で解放し、横長から縦長への自由膨張を解析解と1.6%以内で確認。
 
 ### 成果物ツリー（現状）
 ```
 schrodingerFoam/            # 統一ソルバ（realTime + imaginaryTime）
   schrodingerFoam.C, createFields.H, Make/
 run/
+  00_1_tunneling_1D/       # 1次元量子トンネル（+README.md）
+  00_2_harmonicOscillator_1D/ # 1次元調和振動子（+README.md）
+  00_3_release2D/           # 異方性2Dガウスのトラップ解放（+README.md）
   01_darkSoliton_realTime/  # ダークソリトン→渦核（+README.md）
   02_trap_imaginaryTime/    # 虚時間：トラップ基底状態（+README.md）
   03_vortexDipole_realTime/ # 走る渦対（+README.md）
@@ -535,7 +593,8 @@ run/
   04_darkSoliton_whiteNoise/# 白色ノイズ種で崩壊（+README.md、比較GIF）
 tools/render.py             # VTK→PNG→GIF 自動化
 figures/
-  00_reference/  01_darkSoliton_realTime/  02_trap_imaginaryTime/  03_vortexDipole_realTime/
+  00_reference/  00_1_tunneling_1D/  00_2_harmonicOscillator_1D/  00_3_release2D/
+  01_darkSoliton_realTime/  02_trap_imaginaryTime/  03_vortexDipole_realTime/
   04_darkSoliton_noSeed/  04_darkSoliton_whiteNoise/
 notes.md                    # このメモ（ブログ用）
 ```

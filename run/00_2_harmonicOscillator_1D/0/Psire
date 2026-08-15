@@ -1,0 +1,72 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| Psire -- coherent state: ground-state Gaussian displaced by x0                |
+|   psi(x,0) = A exp(-omega (x-x0)^2 / 2),  Psiim = 0                           |
+|   this oscillates as x(t) = x0 cos(omega t) without spreading                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      Psire;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 0 0 0 0 0 0];
+
+internalField   #codeStream
+{
+    codeInclude
+    #{
+        #include "fvCFD.H"
+    #};
+    codeOptions
+    #{
+        -I$(LIB_SRC)/finiteVolume/lnInclude -I$(LIB_SRC)/meshTools/lnInclude
+    #};
+    codeLibs
+    #{
+        -lfiniteVolume -lmeshTools
+    #};
+    code
+    #{
+        const IOdictionary& d = static_cast<const IOdictionary&>(dict);
+        const fvMesh& mesh = refCast<const fvMesh>(d.db());
+
+        const scalar omega = 1.0;   // trap frequency (must match Vext)
+        const scalar x0    = 4.0;   // initial displacement (oscillation amplitude)
+        const scalar A     = Foam::pow(omega/constant::mathematical::pi, 0.25);
+
+        scalarField psi(mesh.nCells());
+        forAll(psi, i)
+        {
+            const scalar x = mesh.C()[i].x();
+            psi[i] = A*Foam::exp(-0.5*omega*sqr(x - x0));
+        }
+        psi.writeEntry("", os);
+    #};
+};
+
+boundaryField
+{
+    left
+    {
+        type            fixedValue;
+        value           uniform 0;
+    }
+    right
+    {
+        type            fixedValue;
+        value           uniform 0;
+    }
+    emptyY
+    {
+        type            empty;
+    }
+    frontAndBack
+    {
+        type            empty;
+    }
+}
+
+// ************************************************************************* //

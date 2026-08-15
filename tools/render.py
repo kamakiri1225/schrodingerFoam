@@ -2,7 +2,7 @@
 """Render density (magSqrPsi) / phase from foamToVTK output into PNG frames + GIF.
 
 Usage:
-    python3 render.py <case_VTK_dir> <out_dir> [field]
+    python3 render.py <case_VTK_dir> <out_dir> [field] [vmax|auto]
 
 Reads the *.vtm.series (time mapping) and each <block>_<idx>/internal.vtu,
 rasterises the uniform structured grid and colour-maps it.
@@ -19,6 +19,12 @@ from PIL import Image
 vtk_dir = sys.argv[1]
 out_dir = sys.argv[2]
 field   = sys.argv[3] if len(sys.argv) > 3 else "magSqrPsi"
+vmax_arg = sys.argv[4] if len(sys.argv) > 4 else None
+vmax_override = (
+    "auto" if vmax_arg == "auto"
+    else float(vmax_arg) if vmax_arg is not None
+    else None
+)
 os.makedirs(out_dir, exist_ok=True)
 
 series = glob.glob(os.path.join(vtk_dir, "*.vtm.series"))[0]
@@ -55,23 +61,30 @@ if field == "magSqrPsi":
 else:
     vmin, vmax, cmap, clabel = -np.pi, np.pi, "twilight", r"$\arg\psi$"
 
+if vmax_override is not None and vmax_override != "auto":
+    vmax = vmax_override
+
 frames = []
-for e in entries:
+for frame_index, e in enumerate(entries):
     t = e["time"]
     pts, vals = read_internal(e["name"])
     if vals is None:
         continue
     grid = np.full((ny, nx), np.nan)
     grid[iy, ix] = vals
+    frame_vmax = np.nanmax(vals) if vmax_override == "auto" else vmax
     fig, ax = plt.subplots(figsize=(6, 5.4))
     im = ax.imshow(grid, origin="lower",
                    extent=[xs.min(), xs.max(), ys.min(), ys.max()],
-                   cmap=cmap, vmin=vmin, vmax=vmax, interpolation="bilinear")
-    ax.set_title(f"{field}   t = {t}", fontsize=12)
+                   cmap=cmap, vmin=vmin, vmax=frame_vmax, interpolation="bilinear")
+    auto_note = f"   max = {frame_vmax:.3g}" if vmax_override == "auto" else ""
+    ax.set_title(f"{field}   t = {t}{auto_note}", fontsize=12)
     ax.set_xlabel("x"); ax.set_ylabel("y")
     cb = fig.colorbar(im, ax=ax, shrink=0.85); cb.set_label(clabel)
     fig.tight_layout()
-    fpng = os.path.join(out_dir, f"{field}_{int(round(t)):04d}.png")
+    # Use the series index, not rounded physical time.  Fractional write
+    # intervals (e.g. 0.1) otherwise overwrite several frames with one name.
+    fpng = os.path.join(out_dir, f"{field}_{frame_index:04d}.png")
     fig.savefig(fpng, dpi=90)
     plt.close(fig)
     frames.append(fpng)

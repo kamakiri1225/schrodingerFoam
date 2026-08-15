@@ -1,7 +1,7 @@
 # schrodingerFoam — Gross–Pitaevskii solver for OpenFOAM (v2512)
 
-OpenFOAM をカスタマイズして **Gross–Pitaevskii（非線形シュレーディンガー）方程式**
-$$ i\,\partial_t\psi = -D\nabla^2\psi + \big(V_\mathrm{ext} + g|\psi|^2\big)\psi $$
+OpenFOAM をカスタマイズして、**Gross–Pitaevskii（非線形シュレーディンガー）方程式**
+$i\,\partial_t\psi = -D\nabla^2\psi + (V_\mathrm{ext} + g|\psi|^2)\psi$
 を解く統一ソルバ。**虚時間発展（初期状態づくり）** と **実時間発展（本計算）** を
 `mode` 切替で1つのソルバにまとめ、2次元ダークソリトンの横方向不安定性（snake instability）
 から**量子渦の生成・崩壊**までを再現する。
@@ -12,10 +12,20 @@ $$ i\,\partial_t\psi = -D\nabla^2\psi + \big(V_\mathrm{ext} + g|\psi|^2\big)\psi
 </p>
 
 ## なぜ作り直したか
-以前の試み（laplacianFoam 改造・前進オイラー）は、シュレーディンガー方程式に対して
-**無条件不安定**（増幅率 $\sqrt{1+(E\Delta t)^2}>1$）で発散していた。本ソルバは実時間を
-**Crank–Nicolson**（増幅率＝1、ノルム保存）で解き、虚時間を**完全陰的**で解くことで安定化した。
-詳細な導出・コード解説・可視化手順は [`notes.md`](notes.md)。
+シュレーディンガー方程式は「波の存在確率（ノルム）が時間で増えも減りもしない」のが物理の大前提。
+ところが以前 `laplacianFoam` を素朴に改造した実装（前進オイラー）は、1ステップ進むごとに波が
+わずかに増幅してしまい、時間刻みをどれだけ小さくしても最後は計算が**発散**した。
+
+本ソルバは、実時間発展を **Crank–Nicolson 法**（前後の状態の平均で更新する解き方）に変え、
+波の大きさがステップを経ても変わらない＝**ノルムが保存**するようにして安定化した。初期状態づくりに
+使う虚時間発展は、ふつうの拡散方程式と同じ形なので完全陰的に解けば無条件に安定になる。
+
+要するに「発散したのは方程式ではなく“時間の刻み方”のせい」で、そこを直したのが作り直しの中身。
+増幅率などの数式的な理由は [`notes.md`](notes.md)、読み物としての解説は `blog/` の記事にまとめた。
+
+次期研究テーマ「2次元量子乱流BECの自由膨張」は
+[`docs/research_plan_2D_quantum_turbulence_free_expansion.md`](docs/research_plan_2D_quantum_turbulence_free_expansion.md)
+に、先行研究、研究ギャップ、診断量、段階的な計算計画を整理している。
 
 ## 構成
 ```

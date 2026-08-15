@@ -79,6 +79,11 @@ int main(int argc, char *argv[])
     const scalar convTol =
         gpProperties.getOrDefault<scalar>("convergenceTol", 0.0);
 
+    // Optional: switch the external potential OFF at t >= releaseTime
+    // (e.g. releasing a trapped cloud into free expansion). Default: never.
+    const scalar releaseTime =
+        gpProperties.getOrDefault<scalar>("releaseTime", GREAT);
+
     Info<< "Solver mode: " << mode << nl << endl;
 
     // ------------------------------------------------------------------- //
@@ -88,10 +93,15 @@ int main(int argc, char *argv[])
     {
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
+        // Effective potential this step: the trap is released (set to 0) once
+        // the run passes releaseTime; otherwise it equals Vext.
+        const scalar trapOn = (runTime.value() < releaseTime) ? 1.0 : 0.0;
+        const volScalarField Vnow(trapOn*Vext);
+
         if (mode == "imaginaryTime")
         {
             // d(Psi)/dtau = D lap(Psi) - (W - mu) Psi   (W = Vext + g|Psi|^2)
-            volScalarField W("W", Vext + g*(sqr(Psire) + sqr(Psiim)));
+            volScalarField W("W", Vnow + g*(sqr(Psire) + sqr(Psiim)));
 
             // chemical potential  mu = <Psi|H|Psi> / <Psi|Psi>
             volScalarField Hre(-D*fvc::laplacian(Psire) + W*Psire);
@@ -143,7 +153,7 @@ int main(int argc, char *argv[])
 
             const volScalarField W0
             (
-                Vext + g*(sqr(Psire0) + sqr(Psiim0))
+                Vnow + g*(sqr(Psire0) + sqr(Psiim0))
             );
             const volScalarField Hv0(-D*fvc::laplacian(Psiim0) + W0*Psiim0);
             const volScalarField Hu0(-D*fvc::laplacian(Psire0) + W0*Psire0);
@@ -154,14 +164,14 @@ int main(int argc, char *argv[])
             {
                 volScalarField W
                 (
-                    Vext + g*(sqr(Psire) + sqr(Psiim))
+                    Vnow + g*(sqr(Psire) + sqr(Psiim))
                 );
                 const volScalarField Hv(-D*fvc::laplacian(Psiim) + W*Psiim);
 
                 Psire = Psire0 + 0.5*dt*(Hv + Hv0);
                 Psire.correctBoundaryConditions();
 
-                W = Vext + g*(sqr(Psire) + sqr(Psiim));
+                W = Vnow + g*(sqr(Psire) + sqr(Psiim));
                 const volScalarField Hu(-D*fvc::laplacian(Psire) + W*Psire);
 
                 Psiim = Psiim0 - 0.5*dt*(Hu + Hu0);

@@ -1,0 +1,68 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| Vext -- rectangular potential barrier   V = V0 for |x| < a, else 0           |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      Vext;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 0 -1 0 0 0 0];
+
+internalField   #codeStream
+{
+    codeInclude
+    #{
+        #include "fvCFD.H"
+    #};
+    codeOptions
+    #{
+        -I$(LIB_SRC)/finiteVolume/lnInclude -I$(LIB_SRC)/meshTools/lnInclude
+    #};
+    codeLibs
+    #{
+        -lfiniteVolume -lmeshTools
+    #};
+    code
+    #{
+        const IOdictionary& d = static_cast<const IOdictionary&>(dict);
+        const fvMesh& mesh = refCast<const fvMesh>(d.db());
+
+        const scalar V0 = 3.0;   // barrier height, well above the packet's max energy
+                                 //   (mean E = k0^2/2 = 1.125; E_max ~ 1.5) => pure tunneling
+        const scalar a  = 0.6;   // barrier half-width (width = 1.2)
+
+        scalarField V(mesh.nCells());
+        forAll(V, i)
+        {
+            const scalar x = mesh.C()[i].x();
+            V[i] = (Foam::mag(x) < a) ? V0 : 0.0;
+        }
+        V.writeEntry("", os);
+    #};
+};
+
+boundaryField
+{
+    left
+    {
+        type            zeroGradient;
+    }
+    right
+    {
+        type            zeroGradient;
+    }
+    emptyY
+    {
+        type            empty;
+    }
+    frontAndBack
+    {
+        type            empty;
+    }
+}
+
+// ************************************************************************* //

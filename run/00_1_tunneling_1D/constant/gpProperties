@@ -1,0 +1,33 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| gpProperties -- 1D quantum tunneling of a Gaussian wave packet               |
+|                 linear Schroedinger (g = 0), real-time evolution             |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      gpProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Kinetic coefficient  D = hbar / (2 m)  (dimensionless value 0.5)
+D               D  [0 2 -1 0 0 0 0]  0.5;
+
+// No interaction: pure (linear) single-particle Schroedinger equation
+g               g  [0 0 -1 0 0 0 0]  0.0;
+
+// Real-time (unitary) evolution
+mode            realTime;
+
+// Crank-Nicolson Picard iterations
+nCorrectors     4;
+
+// Renormalisation off (norm is conserved by the CN scheme itself)
+normalize       false;
+targetNorm      1.0;
+
+// No convergence stop for real-time dynamics
+convergenceTol  0;
+
+// ************************************************************************* //

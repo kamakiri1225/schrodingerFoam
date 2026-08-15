@@ -1,0 +1,66 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| Vext -- harmonic trap   V = 0.5 * omega^2 * x^2,  omega = 1                  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      Vext;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 0 -1 0 0 0 0];
+
+internalField   #codeStream
+{
+    codeInclude
+    #{
+        #include "fvCFD.H"
+    #};
+    codeOptions
+    #{
+        -I$(LIB_SRC)/finiteVolume/lnInclude -I$(LIB_SRC)/meshTools/lnInclude
+    #};
+    codeLibs
+    #{
+        -lfiniteVolume -lmeshTools
+    #};
+    code
+    #{
+        const IOdictionary& d = static_cast<const IOdictionary&>(dict);
+        const fvMesh& mesh = refCast<const fvMesh>(d.db());
+
+        const scalar omega2 = 1.0;   // omega^2 (must match the initial state)
+
+        scalarField V(mesh.nCells());
+        forAll(V, i)
+        {
+            const scalar x = mesh.C()[i].x();
+            V[i] = 0.5*omega2*x*x;
+        }
+        V.writeEntry("", os);
+    #};
+};
+
+boundaryField
+{
+    left
+    {
+        type            zeroGradient;
+    }
+    right
+    {
+        type            zeroGradient;
+    }
+    emptyY
+    {
+        type            empty;
+    }
+    frontAndBack
+    {
+        type            empty;
+    }
+}
+
+// ************************************************************************* //

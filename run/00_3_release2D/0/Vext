@@ -1,0 +1,63 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| Vext -- anisotropic harmonic trap, switched off by releaseTime              |
+| V = 0.5*(omegaX^2*x^2 + omegaY^2*y^2)                                      |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version 2.0; format ascii; class volScalarField; object Vext;
+}
+
+dimensions [0 0 -1 0 0 0 0];
+
+internalField #codeStream
+{
+    codeInclude
+    #{
+        #include "fvCFD.H"
+    #};
+    codeOptions
+    #{
+        -I$(LIB_SRC)/finiteVolume/lnInclude -I$(LIB_SRC)/meshTools/lnInclude
+    #};
+    codeLibs
+    #{
+        -lfiniteVolume -lmeshTools
+    #};
+    code
+    #{
+        const IOdictionary& d = static_cast<const IOdictionary&>(dict);
+        const fvMesh& mesh = refCast<const fvMesh>(d.db());
+
+        // Match the initial ground state in Psire (sigmaX = 4.0).
+        const scalar omegaX = 0.03125;
+        const scalar omegaY = 2.0;
+        const scalar Vcap = 50.0;
+
+        scalarField V(mesh.nCells());
+        forAll(V, i)
+        {
+            const scalar x = mesh.C()[i].x();
+            const scalar y = mesh.C()[i].y();
+            // The Gaussian is already negligible where the cap is reached.
+            // Capping avoids a numerically stiff, physically irrelevant Vext
+            // at the far corners of the deliberately large free-flight box.
+            V[i] = Foam::min
+            (
+                0.5*(sqr(omegaX*x) + sqr(omegaY*y)),
+                Vcap
+            );
+        }
+        V.writeEntry("", os);
+    #};
+};
+
+boundaryField
+{
+    left         { type zeroGradient; }
+    right        { type zeroGradient; }
+    down         { type zeroGradient; }
+    up           { type zeroGradient; }
+    frontAndBack { type empty; }
+}
+
+// ************************************************************************* //
