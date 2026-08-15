@@ -1,0 +1,88 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | 2D periodic box for the Gross-Pitaevskii eqn    |
+|   \\  /    A nd           |                                                 |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+scale   1;
+
+Lx   16;   // half-size in x
+Ly   16;   // half-size in y
+dz   0.25; // (empty) thickness
+
+nx   128;
+ny   128;
+
+vertices
+(
+    (-$Lx -$Ly 0)     // 0
+    ( $Lx -$Ly 0)     // 1
+    ( $Lx  $Ly 0)     // 2
+    (-$Lx  $Ly 0)     // 3
+    (-$Lx -$Ly $dz)   // 4
+    ( $Lx -$Ly $dz)   // 5
+    ( $Lx  $Ly $dz)   // 6
+    (-$Lx  $Ly $dz)   // 7
+);
+
+blocks
+(
+    hex (0 1 2 3 4 5 6 7) ($nx $ny 1) simpleGrading (1 1 1)
+);
+
+edges
+(
+);
+
+boundary
+(
+    left
+    {
+        type            cyclic;
+        neighbourPatch  right;
+        faces           ( (0 4 7 3) );
+    }
+    right
+    {
+        type            cyclic;
+        neighbourPatch  left;
+        faces           ( (1 2 6 5) );
+    }
+    down
+    {
+        type            cyclic;
+        neighbourPatch  up;
+        faces           ( (0 1 5 4) );
+    }
+    up
+    {
+        type            cyclic;
+        neighbourPatch  down;
+        faces           ( (3 7 6 2) );
+    }
+    frontAndBack
+    {
+        type            empty;
+        faces
+        (
+            (0 3 2 1)
+            (4 5 6 7)
+        );
+    }
+);
+
+mergePatchPairs
+(
+);
+
+// ************************************************************************* //

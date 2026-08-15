@@ -150,22 +150,41 @@ $$
 
 実時間発展の結果を**位相 $\arg\psi$ で可視化**すると、渦やダークソリトンの構造とは別に、画面全体の色が周期的に**チカチカと点滅**することがあります。これは背景の凝縮体がもつ**大域位相 $e^{-i\mu t}$** の回転です。
 
-波動関数を「速い大域位相」と「ゆっくりした中身」に分けます。
+**式で追う**と一目で分かります。出発点は実時間の方程式です。
 
 $$
-\psi(\mathbf r,t)=e^{-i\mu t}\,\phi(\mathbf r,t),\qquad
-\mu=\text{背景の化学ポテンシャル}\ (\text{本設定では}\ g\,n_0=1)
+i\,\frac{\partial\psi}{\partial t}=H\psi,\qquad H=-D\nabla^2+V_\mathrm{ext}+g\lvert\psi\rvert^2
 $$
 
-位相は $\arg\psi=-\mu t+\arg\phi$ となり、第1項 $-\mu t$ は**空間的に一様なまま時間で回る**ため、位相カラーマップ上では全面が周期 $2\pi/\mu$ で全色を巡回＝点滅して見えます。この大域位相は**物理的に観測できない**量です（意味を持つのは位相の空間勾配＝速度と、渦まわりの $2\pi$ 巻きだけ）。だから消してしまって構いません。
-
-参照したカマキリ記事の Fortran コードは、実時間発展を $H$ ではなく $H-\mu$ で解くことでこれを行っています（コード中の `- mu*f` の項）。
+一様な背景（密度 $n_0$）は、化学ポテンシャル $\mu$（一様系なら $\mu=g\,n_0$）の速さで**位相だけが回る定常状態** $\psi_\mathrm{bg}=\sqrt{n_0}\,e^{-i\mu t}$ です。そこで、一般の解からこの**大域位相 $e^{-i\mu t}$ を括り出し**、残りを $\chi$ と置きます。
 
 $$
-i\,\frac{\partial\psi}{\partial t}=(H-\mu)\psi
+\psi(\mathbf r,t)=e^{-i\mu t}\,\chi(\mathbf r,t)
 $$
 
-これは大域位相の回転と一緒に回る**回転系（co-rotating frame）**へ移る操作で、背景の位相が止まり、位相図は**渦核やソリトンの位相構造だけ**がくっきり見えるようになります。密度 $\lvert\psi\rvert^2$ は大域位相に不変なので、密度アニメには元々チラつきは出ません（チラつくのは位相図だけ）です。
+これを代入します。左辺は積の微分から
+
+$$
+i\,\frac{\partial}{\partial t}\big(e^{-i\mu t}\chi\big)
+= e^{-i\mu t}\Big(\mu\,\chi + i\,\frac{\partial\chi}{\partial t}\Big)
+$$
+
+右辺は $H(e^{-i\mu t}\chi)=e^{-i\mu t}\,H\chi$（非線形項も $\lvert\psi\rvert^2=\lvert\chi\rvert^2$ で大域位相に無関係）。両辺の $e^{-i\mu t}$ を消すと、
+
+$$
+\mu\,\chi + i\,\frac{\partial\chi}{\partial t}=H\chi
+\quad\Longrightarrow\quad
+i\,\frac{\partial\chi}{\partial t}=(H-\mu)\,\chi
+$$
+
+つまり **「$\mu$ を引く」＝「解く変数を $\psi$ から $\chi=e^{+i\mu t}\psi$ に取り替える」**（大域位相と一緒に回る**回転系＝ゲージ変換**）というだけのことです。参照したカマキリ記事の Fortran コードも、実時間発展を $H-\mu$ で解いています（コード中の `- mu*f` の項）。
+
+**位相を描いたときの違い**は、$\arg\psi=-\mu t+\arg\chi$ から明らかです。
+
+- $\psi$ を解いて位相図にする → 背景では $\arg\psi=-\mu t$。**場所によらず一様なまま時間で回る**ので、位相カラーマップは全面が周期 $2\pi/\mu$ で全色を巡回＝**点滅**（本設定 $\mu=1$ なら周期 $2\pi\approx6.28$）。
+- $\chi$（＝$H-\mu$）を解いて位相図にする → $\arg\chi$ に $-\mu t$ が無い。背景の色は**止まり**、渦まわりの $2\pi$ 巻きなど**相対位相だけ**が残る。
+
+この $-\mu t$ は**物理的に観測できない**大域位相（意味を持つのは位相の空間勾配＝速度と、渦まわりの巻きだけ）なので、消して構いません。密度は $\lvert\psi\rvert^2=\lvert e^{-i\mu t}\chi\rvert^2=\lvert\chi\rvert^2$ と大域位相に不変なので、**密度図は元から点滅しません**（点滅するのは位相図だけ）。
 
 本ソルバの `realTime` は既定では $i\partial_t\psi=H\psi$（$\mu$ を引かない素の形）で解いているため、位相図が点滅します。位相をきれいに見せたいときは、`constant/gpProperties` で**化学ポテンシャルを考慮するオプション**を選べます（**物理＝密度・渦の運動は一切変わりません**）。
 
@@ -201,6 +220,7 @@ run/                      ← 計算ケース（各フォルダに README.md 仕
   01_darkSoliton_realTime/    ダークソリトン → 渦核（cos 摂動で種付け／第7回）
   02_trap_imaginaryTime/      虚時間：調和トラップの基底状態（第5回）
   03_vortexDipole_realTime/   走る渦対（渦-反渦ダイポール／第6回）
+  03_1_vortexDipole_muShift/  同上の μ 差し引き版（位相の点滅を消す／第6回）
   04_darkSoliton_noSeed/      対照：摂動なし → 崩壊しない（第7回）
   04_darkSoliton_whiteNoise/  白色ノイズの種 → 不規則な渦崩壊（第7回）
 tools/render.py           ← VTK → PNG → GIF の可視化スクリプト
