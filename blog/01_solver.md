@@ -141,30 +141,114 @@ notes.md                  ← 詳しい作業メモ
 
 ## 作成手順（コマンドを1つずつ解説）
 
-OpenFOAM v2512 環境には `openfoam2512 -c '<コマンド>'` で入ります（非対話でビルド・実行できる）。
+まず OpenFOAM v2512 の環境に入ります。ターミナルで `openfoam2512` と打つと、プロンプトが環境内に切り替わります。以降の手順は**この環境の中で**実行し、終わったら `exit` で抜けます。
+
+```bash
+# OpenFOAM v2512 環境に入る（プロンプトが変わる）
+openfoam2512
+```
+
+> 1コマンドだけを非対話で流したいときは、環境に入らず `openfoam2512 -c '<コマンド>'` と書くこともできます。以下は環境に入った状態で説明します。
 
 ### 手順① ソルバの雛形を作る
 
+環境の中で、`laplacianFoam` のソースをユーザ領域にコピーして出発点にします。
+
 ```bash
-# laplacianFoam のソースをユーザ領域にコピーして出発点にする
-openfoam2512 -c 'cp -r $FOAM_SOLVERS/basic/laplacianFoam schrodingerFoam'
+# （openfoam2512 環境の中で）laplacianFoam を丸ごとコピー
+cp -r $FOAM_SOLVERS/basic/laplacianFoam schrodingerFoam
 ```
 
 `$FOAM_SOLVERS` は OpenFOAM 標準ソルバのソース置き場。`laplacianFoam`（拡散ソルバ）を丸ごとコピーして、これを改造していきます。
 
 ### 手順② 場の定義を書き換える（`createFields.H`）
 
-`T` 1本を消し、`Psire`・`Psiim` の2本と、外部ポテンシャル `Vext`、後処理用の `magSqrPsi`($|\psi|^2$)・`phase`($\arg\psi$) を追加します。係数 `D`・`g` は `constant/gpProperties` から読みます。
+`T` 1本を消し、`Psire`・`Psiim` の2本と、外部ポテンシャル `Vext`、後処理用の `magSqrPsi`($|\psi|^2$)・`phase`($\arg\psi$) を追加します。係数 `D`・`g` は `constant/gpProperties` から読みます。OpenFOAM の場は `IOobject`（名前・読み書きのルール）と初期値をセットで渡して作ります。実際の `createFields.H` は次のとおりです（省略なし）。
 
 ```cpp
-volScalarField Psire(... "Psire" ..., MUST_READ ...);      // 実部 u
-volScalarField Psiim(... "Psiim" ..., MUST_READ ...);      // 虚部 v
-volScalarField Vext (... "Vext"  ..., READ_IF_PRESENT ...);// 外部ポテンシャル（無ければ0）
-dimensionedScalar D("D", dimensionSet(0,2,-1,0,0,0,0), gpProperties); // hbar/2m
-dimensionedScalar g("g", dimensionSet(0,0,-1,0,0,0,0), gpProperties); // 非線形係数
+// constant/gpProperties を読む辞書オブジェクト
+IOdictionary gpProperties
+(
+    IOobject
+    (
+        "gpProperties", runTime.constant(), mesh,
+        IOobject::MUST_READ_IF_MODIFIED, IOobject::NO_WRITE
+    )
+);
+
+// 物理係数：gpProperties から次元つきで読む
+dimensionedScalar D("D", dimensionSet(0, 2, -1, 0, 0, 0, 0), gpProperties); // hbar/2m [m^2/s]
+dimensionedScalar g("g", dimensionSet(0, 0, -1, 0, 0, 0, 0), gpProperties); // 非線形係数 [1/s]
+
+// 実部 u：0/Psire を必ず読む（MUST_READ）、毎ステップ書き出す（AUTO_WRITE）
+volScalarField Psire
+(
+    IOobject
+    (
+        "Psire", runTime.timeName(), mesh,
+        IOobject::MUST_READ, IOobject::AUTO_WRITE
+    ),
+    mesh
+);
+
+// 虚部 v：Psire と同じ扱い
+volScalarField Psiim
+(
+    IOobject
+    (
+        "Psiim", runTime.timeName(), mesh,
+        IOobject::MUST_READ, IOobject::AUTO_WRITE
+    ),
+    mesh
+);
+
+// 外部ポテンシャル：0/Vext があれば読む（READ_IF_PRESENT）、無ければ 0 で作る
+volScalarField Vext
+(
+    IOobject
+    (
+        "Vext", runTime.timeName(), mesh,
+        IOobject::READ_IF_PRESENT, IOobject::NO_WRITE
+    ),
+    mesh,
+    dimensionedScalar("zero", dimensionSet(0, 0, -1, 0, 0, 0, 0), Zero)  // 既定値 0
+);
+
+// 後処理用：密度 |Psi|^2 は読まずに計算で作り（NO_READ）、書き出す（AUTO_WRITE）
+volScalarField magSqrPsi
+(
+    IOobject
+    (
+        "magSqrPsi", runTime.timeName(), mesh,
+        IOobject::NO_READ, IOobject::AUTO_WRITE
+    ),
+    sqr(Psire) + sqr(Psiim)   // 初期値をその場で計算
+);
+
+// 後処理用：位相 arg(Psi)。渦の検出に使う
+volScalarField phase
+(
+    IOobject
+    (
+        "phase", runTime.timeName(), mesh,
+        IOobject::NO_READ, IOobject::AUTO_WRITE
+    ),
+    mesh,
+    dimensionedScalar("zero", dimless, Zero)
+);
 ```
 
-次元は `laplacianFoam` の `DT`（m²/s）に倣い、`D` を m²/s、`g`・`Vext` を 1/s とすると、`fvm::ddt` と `fvm::laplacian(D,·)` の次元が揃い、OpenFOAM の次元チェックが通ります。
+`IOobject` の第4・第5引数が「読み方・書き方」のルールです。ここだけ押さえれば十分です。
+
+| フラグ | 意味 | 使っている場 |
+|--------|------|------------|
+| `MUST_READ` | 起動時に `0/` のファイルを**必ず読む**（無ければエラー） | `Psire`, `Psiim`（初期波動関数） |
+| `READ_IF_PRESENT` | ファイルが**あれば読む・無ければ既定値で作る** | `Vext`（ポテンシャル無しなら 0） |
+| `NO_READ` | 読まずに、コードで与えた初期値で作る | `magSqrPsi`, `phase`（計算で求める量） |
+| `AUTO_WRITE` | 出力時刻ごとに**自動で書き出す** | 上記すべて（後で可視化する） |
+| `NO_WRITE` | 書き出さない | `Vext`（時間変化しないので不要） |
+
+次元は `laplacianFoam` の `DT`（m²/s）に倣い、`D` を m²/s、`g`・`Vext` を 1/s とすると、`fvm::ddt` と `fvm::laplacian(D,·)` の次元が揃い、OpenFOAM の次元チェックが通ります（第1章で触れた「見かけの次元」がこれです）。
 
 ### 手順③ 解く式を GP に書き換える（`schrodingerFoam.C`）
 
@@ -217,7 +301,9 @@ if (normalize) { /* 毎ステップ ∫|psi|^2 = targetNorm に規格化 */ }
 ### 手順④ ビルドする
 
 ```bash
-openfoam2512 -c 'cd schrodingerFoam && wmake'
+# （openfoam2512 環境の中で）ソルバをビルド
+cd schrodingerFoam
+wmake
 ```
 
 `wmake` が `Make/files`（実行ファイル名）と `Make/options`（リンクするライブラリ）を読んでコンパイルします。成功すると `$FOAM_USER_APPBIN/schrodingerFoam` が生成され、以後どのケースでも `schrodingerFoam` コマンドで呼べます。
@@ -281,16 +367,23 @@ forAll(psi, i)
 ## 計算の実行方法
 
 ```bash
-# ① メッシュ生成 → ② 計算実行
-openfoam2512 -c 'cd run/01_darkSoliton_realTime && blockMesh && schrodingerFoam'
+# （openfoam2512 環境の中で）① メッシュ生成 → ② 計算実行
+cd run/01_darkSoliton_realTime
+blockMesh
+schrodingerFoam
 ```
 
-実行中は各ステップの `norm`（虚時間なら `mu` も）が表示され、ノルムが一定なら安定に解けている証拠です。計算後、結果を VTK に出して Python で GIF 化します。
+実行中は各ステップの `norm`（虚時間なら `mu` も）が表示され、ノルムが一定なら安定に解けている証拠です。計算後、結果を VTK に出します（ここまで環境の中）。
 
 ```bash
-# ③ 場を ascii の VTK (.vtu) に書き出し
-openfoam2512 -c 'cd run/01_darkSoliton_realTime && foamToVTK -fields "(magSqrPsi phase)" -ascii'
-# ④ VTK → PNG連番 → GIF
+# （openfoam2512 環境の中で）③ 場を ascii の VTK (.vtu) に書き出し
+foamToVTK -fields "(magSqrPsi phase)" -ascii
+```
+
+最後の GIF 化は OpenFOAM 環境の外（ふつうのターミナル）で行います。`exit` で環境を抜けてから実行してください。
+
+```bash
+# 環境の外（ホスト）で ④ VTK → PNG連番 → GIF
 python3 tools/render.py run/01_darkSoliton_realTime/VTK figures/01_darkSoliton_realTime/density magSqrPsi
 ```
 
