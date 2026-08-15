@@ -1,0 +1,37 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| controlDict -- imaginary-time ground-state relaxation                       |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+application     schrodingerFoam;
+
+startFrom       startTime;
+startTime       0;
+
+stopAt          endTime;
+endTime         60;      // upper cap; run stops earlier on convergence
+
+deltaT          0.05;    // imaginary time is unconditionally stable -> large step
+
+writeControl    runTime;
+writeInterval   5;
+
+purgeWrite      0;
+
+writeFormat     binary;
+writePrecision  8;
+writeCompression off;
+
+timeFormat      general;
+timePrecision   6;
+
+runTimeModifiable true;
+
+// ************************************************************************* //

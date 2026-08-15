@@ -1,0 +1,78 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| Psiim -- imaginary part of the vortex-antivortex dipole                     |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      Psiim;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 0 0 0 0 0 0];
+
+internalField   #codeStream
+{
+    codeInclude
+    #{
+        #include "fvCFD.H"
+    #};
+    codeOptions
+    #{
+        -I$(LIB_SRC)/finiteVolume/lnInclude -I$(LIB_SRC)/meshTools/lnInclude
+    #};
+    codeLibs
+    #{
+        -lfiniteVolume -lmeshTools
+    #};
+    code
+    #{
+        const IOdictionary& d = static_cast<const IOdictionary&>(dict);
+        const fvMesh& mesh = refCast<const fvMesh>(d.db());
+
+        const scalar dsep = 2.5;
+        const scalar xi   = 0.707;
+        const scalar w    = 1.4142*xi;
+
+        scalarField psi(mesh.nCells());
+        forAll(psi, i)
+        {
+            const scalar x = mesh.C()[i].x();
+            const scalar y = mesh.C()[i].y();
+            const scalar r1 = Foam::sqrt(sqr(x) + sqr(y - dsep));
+            const scalar r2 = Foam::sqrt(sqr(x) + sqr(y + dsep));
+            const scalar amp = Foam::tanh(r1/w)*Foam::tanh(r2/w);
+            const scalar phi =
+                Foam::atan2(y - dsep, x) - Foam::atan2(y + dsep, x);
+            psi[i] = amp*Foam::sin(phi);
+        }
+        psi.writeEntry("", os);
+    #};
+};
+
+boundaryField
+{
+    left
+    {
+        type            cyclic;
+    }
+    right
+    {
+        type            cyclic;
+    }
+    down
+    {
+        type            cyclic;
+    }
+    up
+    {
+        type            cyclic;
+    }
+    frontAndBack
+    {
+        type            empty;
+    }
+}
+
+// ************************************************************************* //

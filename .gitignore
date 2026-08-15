@@ -1,0 +1,30 @@
+# ---- OpenFOAM run output (heavy / regenerable) ----
+# time-step directories (keep the initial condition dir "0")
+run/*/[1-9]*/
+run/*/0.*/
+run/*/VTK/
+run/*/processor*/
+run/*/postProcessing/
+run/*/dynamicCode/
+run/*/constant/polyMesh/
+run/*/*.orig/
+run/*/log.*
+
+# animation frame sequences (keep only the compressed .gif)
+run/*/ani/
+figures/*/frames/
+
+# ---- solver build artifacts ----
+schrodingerFoam/Make/*/
+schrodingerFoam/lnInclude/
+**/*.o
+**/*.so
+**/linux*Opt/
+
+# ---- heavy reference material (downloadable elsewhere) ----
+docs/
+figures/00_reference/ref_kamakiri_animate_full.gif
+
+# ---- misc ----
+*.pyc
+__pycache__/

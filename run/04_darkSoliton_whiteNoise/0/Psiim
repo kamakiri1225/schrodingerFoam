@@ -1,0 +1,72 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| Psiim -- imaginary part: small white noise (seeds the snake instability)     |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      Psiim;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 0 0 0 0 0 0];
+
+internalField   #codeStream
+{
+    codeInclude
+    #{
+        #include "fvCFD.H"
+        #include "Random.H"
+    #};
+    codeOptions
+    #{
+        -I$(LIB_SRC)/finiteVolume/lnInclude -I$(LIB_SRC)/meshTools/lnInclude
+    #};
+    codeLibs
+    #{
+        -lfiniteVolume -lmeshTools
+    #};
+    code
+    #{
+        const IOdictionary& d = static_cast<const IOdictionary&>(dict);
+        const fvMesh& mesh = refCast<const fvMesh>(d.db());
+
+        const scalar no = 1.0e-2;
+        Random rndGen(19700101);   // different seed from Psire
+        scalarField psi(mesh.nCells());
+        forAll(psi, i)
+        {
+            const scalar fre1 = rndGen.sample01<scalar>();
+            const scalar fre2 = rndGen.sample01<scalar>();
+            psi[i] = no*fre1*Foam::sin(2.0*constant::mathematical::pi*fre2);
+        }
+        psi.writeEntry("", os);
+    #};
+};
+
+boundaryField
+{
+    left
+    {
+        type            cyclic;
+    }
+    right
+    {
+        type            cyclic;
+    }
+    down
+    {
+        type            cyclic;
+    }
+    up
+    {
+        type            cyclic;
+    }
+    frontAndBack
+    {
+        type            empty;
+    }
+}
+
+// ************************************************************************* //

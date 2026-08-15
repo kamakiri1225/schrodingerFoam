@@ -1,0 +1,25 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| gpProperties -- imaginary-time ground state of a harmonic trap              |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      gpProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+D               D  [0 2 -1 0 0 0 0]  0.5;
+g               g  [0 0 -1 0 0 0 0]  1.0;
+
+mode            imaginaryTime;
+
+nCorrectors     1;          // not used in imaginaryTime
+
+normalize       true;       // fix the particle number each step
+targetNorm      20.0;       // integral of |psi|^2 over the domain
+
+convergenceTol  1e-5;       // stop when the state stops changing
+
+// ************************************************************************* //
