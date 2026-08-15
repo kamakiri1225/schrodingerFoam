@@ -1,0 +1,40 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      gpProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Diffusion coefficient  D = hbar / (2 m)
+D               D  [0 2 -1 0 0 0 0]  0.5;
+
+// Non-linear coupling constant  g  (repulsive if > 0)
+g               g  [0 0 -1 0 0 0 0]  1.0;
+
+// Time-integration mode: realTime | imaginaryTime
+mode            realTime;
+
+// Crank-Nicolson Picard iterations (realTime)
+nCorrectors     4;
+
+// Renormalisation (mainly for imaginaryTime ground-state search)
+normalize       false;
+targetNorm      1.0;
+
+// Stop when the field stops changing (imaginaryTime relaxation). 0 = never.
+convergenceTol  0;
+
+// Chemical-potential subtraction (co-rotating frame): solve (H - muShift)
+// instead of H. This freezes the trivial global phase e^{-i mu t}, so the
+// phase plot no longer flickers. Density and vortex/soliton dynamics are
+// unchanged. Set dynamicMu true to use mu = <Psi|H|Psi>/<Psi|Psi> instead.
+dynamicMu       false;
+muShift         1.0;
+
+// ************************************************************************* //

@@ -1,0 +1,81 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| Psire -- STRAIGHT dark-soliton pair + white noise (kamakiri-style seeding)  |
+|          A perfectly straight soliton is an unstable STATIONARY state; the   |
+|          random noise seeds the transverse (snake) instability.             |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      Psire;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 0 0 0 0 0 0];
+
+internalField   #codeStream
+{
+    codeInclude
+    #{
+        #include "fvCFD.H"
+        #include "Random.H"
+    #};
+    codeOptions
+    #{
+        -I$(LIB_SRC)/finiteVolume/lnInclude -I$(LIB_SRC)/meshTools/lnInclude
+    #};
+    codeLibs
+    #{
+        -lfiniteVolume -lmeshTools
+    #};
+    code
+    #{
+        const IOdictionary& d = static_cast<const IOdictionary&>(dict);
+        const fvMesh& mesh = refCast<const fvMesh>(d.db());
+
+        const scalar w   = 1.0;    // soliton width
+        const scalar x0  = 6.0;    // half-separation
+        const scalar no  = 1.0e-2; // white-noise amplitude (seeds snake mode)
+
+        Random rndGen(20260814);   // fixed seed -> reproducible
+        scalarField psi(mesh.nCells());
+        forAll(psi, i)
+        {
+            const scalar x = mesh.C()[i].x();
+            // STRAIGHT solitons (no deterministic transverse perturbation)
+            const scalar amp = Foam::tanh((x + x0)/w)*Foam::tanh((x - x0)/w);
+            // additive complex white noise: real part here
+            const scalar fre1 = rndGen.sample01<scalar>();
+            const scalar fre2 = rndGen.sample01<scalar>();
+            psi[i] = amp + no*fre1*Foam::cos(2.0*constant::mathematical::pi*fre2);
+        }
+        psi.writeEntry("", os);
+    #};
+};
+
+boundaryField
+{
+    left
+    {
+        type            cyclic;
+    }
+    right
+    {
+        type            cyclic;
+    }
+    down
+    {
+        type            cyclic;
+    }
+    up
+    {
+        type            cyclic;
+    }
+    frontAndBack
+    {
+        type            empty;
+    }
+}
+
+// ************************************************************************* //
