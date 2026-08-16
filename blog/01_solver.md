@@ -1,7 +1,7 @@
 <!-- 第1回：GPソルバ schrodingerFoam を自作する -->
 
 > **シリーズ「OpenFOAM でシュレーディンガー方程式を解く」全7回・第1回。**
-> 全記事：**①ソルバ自作（本記事）**／②量子トンネル効果／③調和振動子ポテンシャル／④量子 vs 古典・波束の広がり／⑤虚時間発展で基底状態を作る／⑥走る渦対／⑦ダークソリトンの崩壊（ノイズ有無）
+> 全記事：**①ソルバ自作（本記事）**／②量子トンネル効果／③調和振動子ポテンシャル／④量子 vs 古典・波束の広がり／⑤虚時間発展で基底状態を作る／⑥走る渦対／**総集編（第0回）：全体ダイジェスト（ダークソリトン崩壊まで）**
 > リポジトリ：<https://github.com/kamakiri1225/schrodingerFoam>
 
 OpenFOAM をカスタマイズして、**Gross–Pitaevskii（GP）方程式＝非線形シュレーディンガー方程式**を解くソルバ `schrodingerFoam` を自作します。第1回は「解きたい方程式」「何をカスタマイズするのか（`laplacianFoam` からの改造4点）」「フォルダ構成」「作成手順（コマンドを1つずつ）」「OpenFOAM 側の設定ファイルと実行方法」までを一気通貫で扱います。
@@ -10,7 +10,7 @@ OpenFOAM をカスタマイズして、**Gross–Pitaevskii（GP）方程式＝�
 
 <p align="center">
   <img src="../figures/04_darkSoliton_whiteNoise/comparison_noSeed_vs_whiteNoise.gif" width="720"><br>
-  <em>2本のダークソリトン（青い溝）が波打ち、点渦の集団＝量子乱流へ崩壊していく（第7回）</em>
+  <em>2本のダークソリトン（青い溝）が波打ち、点渦の集団＝量子乱流へ崩壊していく（総集編）</em>
 </p>
 
 ## 解きたい方程式
@@ -217,12 +217,12 @@ run/                      ← 計算ケース（各フォルダに README.md 仕
   00_1_tunneling_1D/          1D 量子トンネル効果（第2回）
   00_2_harmonicOscillator_1D/ 1D 調和振動子・コヒーレント状態（第3回）
   00_3_release2D/             2D 波束の自由膨張・量子 vs 古典（第4回）
-  01_darkSoliton_realTime/    ダークソリトン → 渦核（cos 摂動で種付け／第7回）
+  01_darkSoliton_realTime/    ダークソリトン → 渦核（cos 摂動で種付け／総集編）
   02_trap_imaginaryTime/      虚時間：調和トラップの基底状態（第5回）
   03_vortexDipole_realTime/   走る渦対（渦-反渦ダイポール／第6回）
   03_1_vortexDipole_muShift/  同上の μ 差し引き版（位相の点滅を消す／第6回）
-  04_darkSoliton_noSeed/      対照：摂動なし → 崩壊しない（第7回）
-  04_darkSoliton_whiteNoise/  白色ノイズの種 → 不規則な渦崩壊（第7回）
+  04_darkSoliton_noSeed/      対照：摂動なし → 崩壊しない（総集編）
+  04_darkSoliton_whiteNoise/  白色ノイズの種 → 不規則な渦崩壊（総集編）
 tools/render.py           ← VTK → PNG → GIF の可視化スクリプト
 figures/                  ← 結果 GIF・図（run と同じ連番で対応）
 notes.md                  ← 詳しい作業メモ
