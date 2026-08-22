@@ -25,6 +25,12 @@ schrodingerFoam/lnInclude/
 # ---- heavy reference material (downloadable elsewhere) ----
 docs/*
 !docs/research_plan_2D_quantum_turbulence_free_expansion.md
+# --- slide deck for GitHub Pages (keep tracked) ---
+!docs/slides_schrodingerFoam.html
+!docs/*.png
+!docs/book_*.jpg
+!docs/note_prev_attempt.gif
+!docs/古典_量子乱流.png
 figures/00_reference/ref_kamakiri_animate_full.gif
 
 # ---- misc ----

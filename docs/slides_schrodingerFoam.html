@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenFOAMでシュレーディンガー方程式を解く｜勉強会</title>
+
+<!-- reveal.js core + theme (CDN: 会場のインターネット接続が必要) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/theme/white.css" id="theme">
+
+<style>
+  :root{
+    --accent:#1f6feb; --accent2:#c0392b; --ink:#1c2530; --muted:#5b6b7b; --dark:#0d1b2a;
+  }
+  .reveal{ font-family:"Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif; color:var(--ink); }
+  .reveal h1,.reveal h2,.reveal h3{ color:var(--ink); font-weight:800; letter-spacing:.01em; text-transform:none; }
+  .reveal h1{ font-size:1.9em; line-height:1.25; }
+  .reveal h2{ font-size:1.2em; border-bottom:4px solid var(--accent); display:inline-block; padding-bottom:.12em; margin:0 0 .35em;}
+  .reveal section{ text-align:left; }
+  .reveal .center{ text-align:center; }
+  .reveal p,.reveal li{ font-size:.7em; line-height:1.38; margin:.35em 0; }
+  .reveal .lead{ font-size:.88em; color:var(--muted); }
+  /* keep display equations from eating vertical space */
+  .reveal mjx-container[display="true"]{ font-size:.9em !important; margin:.35em 0 !important; }
+  /* opt-in larger equation */
+  .reveal .eq-lg mjx-container[display="true"]{ font-size:1.35em !important; }
+  .reveal strong{ color:var(--accent2); }
+  .reveal em{ color:var(--accent); font-style:normal; font-weight:700; }
+  .reveal img{ background:#fff; border-radius:8px; box-shadow:0 6px 24px rgba(0,0,0,.14); }
+  .reveal figcaption{ font-size:.6em; color:var(--muted); margin-top:.3em; text-align:center;}
+  .reveal .cols{ display:flex; gap:1em; align-items:center; }
+  .reveal .cols>div{ flex:1; }
+  .reveal .box{ background:#f2f6fc; border-left:6px solid var(--accent); border-radius:8px; padding:.45em .7em; font-size:.8em; }
+  .reveal .box.warn{ background:#fdf1ef; border-left-color:var(--accent2); }
+  .reveal .kicker{ color:var(--accent); font-weight:800; font-size:.62em; letter-spacing:.14em; }
+  .reveal .big-eq{ font-size:1.0em; }
+  .reveal .footer{ position:fixed; bottom:8px; left:14px; font-size:12px; color:#9aa7b4; z-index:30;}
+  .reveal ul{ margin-left:.2em; }
+  .reveal .small p, .reveal .small li{ font-size:.66em; }
+  .reveal table{ font-size:.66em; }
+  .reveal .pill{ display:inline-block; background:var(--accent); color:#fff; border-radius:999px; padding:.05em .7em; font-size:.62em; font-weight:700;}
+  /* chapter divider */
+  .reveal .chap-no{ color:#7fb0ff; font-weight:800; font-size:.72em; letter-spacing:.22em; margin-bottom:.35em;}
+  .reveal .chap h1{ font-size:1.7em; }
+  .reveal .downhint{ color:#8ea3b8; font-size:.62em; letter-spacing:.1em; margin-top:1.2em;}
+  .reveal .downhint::before{ content:"▼ "; }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ============ TITLE (standalone) ============ -->
+<section data-background-color="#0d1b2a">
+  <div class="center">
+    <div class="kicker" style="color:#7fb0ff">STUDY GROUP</div>
+    <h1 style="color:#fff;">OpenFOAM で<br>シュレーディンガー方程式を解く</h1>
+    <p class="lead" style="color:#c7d3e0; font-size:1em;">
+      流体ソルバは PDE ソルバ ─ 量子力学（GP方程式）まで解けるか</p>
+    <p style="color:#8ea3b8; font-size:.7em; margin-top:1.4em;">
+      自作ソルバ <code style="color:#ffd479;">schrodingerFoam</code> ／ OpenFOAM v2512<br>
+      @t_kun_kamakiri</p>
+  </div>
+</section>
+
+<!-- ============ AGENDA (standalone) ============ -->
+<section>
+  <h2>本日の流れ（全8章）</h2>
+  <div class="cols">
+    <div>
+      <ol>
+        <li>シュレーディンガー方程式とは</li>
+        <li>ソルバのカスタマイズ手順</li>
+        <li>動作確認</li>
+        <li>トンネル効果</li>
+      </ol>
+    </div>
+    <div>
+      <ol start="5">
+        <li>調和振動子</li>
+        <li>GP方程式の渦問題（量子流体）</li>
+        <li><em>ナビエ・ストークスと同じ形が出る</em></li>
+        <li>今後の発展</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 参考書：量子力学 ============ -->
+<section>
+  <h2>参考書（量子力学）</h2>
+  <div class="cols small" style="align-items:flex-start; justify-content:center; gap:.8em;">
+    <div class="center">
+      <img src="book_shimizu.jpg" style="height:230px; width:auto;">
+      <figcaption>清水 明『量子論の基礎』<br>本質をやさしく</figcaption>
+    </div>
+    <div class="center">
+      <img src="book_inoki.jpg" style="height:230px; width:auto;">
+      <figcaption>猪木・川合『量子力学 I』<br>定番の教科書</figcaption>
+    </div>
+    <div class="center">
+      <img src="book_hotta.jpg" style="height:230px; width:auto;">
+      <figcaption>堀田 昌寛『量子力学の〈新常識〉』<br>意識・実在・情報の視点</figcaption>
+    </div>
+    <div class="center">
+      <img src="book_muramatsu.jpg" style="height:230px; width:auto;">
+      <figcaption>村松 大輔『量子力学的 感謝日記』<br><em>番外編（スピリチュアル読み物）</em></figcaption>
+    </div>
+  </div>
+  <p class="lead center">左3冊は物理の定番／右は息抜きの読み物。</p>
+</section>
+
+<!-- ============ 参考書：量子流体 ============ -->
+<section>
+  <h2>参考書（量子流体）</h2>
+  <div class="cols small" style="align-items:flex-start; justify-content:center; gap:.6em;">
+    <div class="center">
+      <img src="book_tsubota_jp.jpg" style="height:200px; width:auto;">
+      <figcaption>坪田 誠ほか<br>『量子流体力学』（和書）</figcaption>
+    </div>
+    <div class="center">
+      <img src="book_pethick.jpg" style="height:200px; width:auto;">
+      <figcaption>ペシック・スミス<br>『BEC』（日本語訳）</figcaption>
+    </div>
+    <div class="center">
+      <img src="book_pethick_en.jpg" style="height:200px; width:auto;">
+      <figcaption>Pethick &amp; Smith<br><em>BEC in Dilute Gases</em></figcaption>
+    </div>
+    <div class="center">
+      <img src="book_yamada.jpg" style="height:200px; width:auto;">
+      <figcaption>山田 一雄<br>『超流動』</figcaption>
+    </div>
+    <div class="center">
+      <img src="book_tsubota_en.jpg" style="height:200px; width:auto;">
+      <figcaption>Tsubota ほか<br><em>Quantum Hydrodynamics<br>and Turbulence</em></figcaption>
+    </div>
+  </div>
+  <p class="lead center">後半（GP方程式・量子渦・量子乱流）はこのあたりが詳しいです。</p>
+</section>
+
+<!-- ============ CHAPTER 1 ============ -->
+<section>
+  <!-- divider -->
+  <section data-background-color="#0d1b2a" class="chap">
+    <div class="center">
+      <div class="chap-no">CHAPTER 1</div>
+      <h1 style="color:#fff;">シュレーディンガー方程式とは</h1>
+      <p class="downhint">量子力学の基礎方程式と、その“正体”</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>シュレーディンガー方程式とは</h2>
+    <p>量子力学の基礎方程式。粒子の状態を<strong>波動関数</strong> \(\psi(\mathbf{x},t)\) で表し、その時間発展を決める。</p>
+    <p class="center big-eq">\[ i\hbar\,\frac{\partial \psi}{\partial t} = -\frac{\hbar^2}{2m}\nabla^2\psi + V(\mathbf{x})\,\psi \]</p>
+    <div class="cols">
+      <div class="box">
+        <p style="margin:0;"><strong>確率解釈</strong>：\(|\psi|^2\) が存在確率密度。<br>
+        全空間で \(\displaystyle\int |\psi|^2\,d\mathbf{x}=1\)（<em>ノルム保存</em>）。</p>
+      </div>
+      <div class="box">
+        <p style="margin:0;"><strong>数学的な正体</strong>：<br>
+        時間1階・空間2階の<em>偏微分方程式（PDE）</em>。<br>
+        拡散方程式に虚数 \(i\) が付いた形。</p>
+      </div>
+    </div>
+    <p class="lead" style="margin-top:.7em;">→ PDE なら OpenFOAM の土俵。ただし \(\psi\) は複素数。</p>
+  </section>
+
+  <section>
+    <h2>複素数を「2つの実数場」に分ける</h2>
+    <p>\(\psi = u + i v\) と置くと、1本の複素方程式が \(u,v\) の連立実方程式になる：</p>
+    <p class="center eq-lg">\[ \begin{aligned}
+          \frac{\partial u}{\partial t} &= -D\,\nabla^2 v + \frac{1}{\hbar}V v \\[6pt]
+          \frac{\partial v}{\partial t} &= +D\,\nabla^2 u - \frac{1}{\hbar}V u
+          \end{aligned}\qquad\left(D=\frac{\hbar}{2m}\right) \]</p>
+    <div class="box">
+      <p style="margin:0;"><strong>考え方</strong>：実部・虚部に分けると、\(\nabla^2\)（ラプラシアン）が主役の
+      <em>拡散方程式と同じ形</em>になる＝<code>laplacianFoam</code> がそのまま使える形。
+      あとは<strong>ポテンシャル項 \(V\)</strong>（と後で相互作用 \(g|\psi|^2\)）を足すだけ、という発想。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>実は昔、一度失敗していた</h2>
+    <div class="cols">
+      <div class="center" style="flex:1.4;">
+        <img src="note_prev_attempt.gif" style="width:100%; max-height:380px;">
+        <figcaption>以前の挑戦（note）：波動関数（実部・虚部）が端から荒れ、<em>発散</em>しかけている。図：note.com/kamakiriphysics より</figcaption>
+      </div>
+      <div class="small">
+        <p>この「<code>laplacianFoam</code> を改造する」方針は、<strong>以前 note で挑戦したが失敗</strong>していた。前進オイラーで計算が荒れて<strong>発散</strong>してしまったのだ。</p>
+        <p class="box" style="margin-top:.3em;">今回、<strong>AI が格段に賢くなった</strong>ので再挑戦。時間の刻み方を Crank–Nicolson に変えてノルムを保存させ、ようやく完成させた（＝次章）。</p>
+      </div>
+    </div>
+  </section>
+</section>
+
+<!-- ============ CHAPTER 2 ============ -->
+<section>
+  <section data-background-color="#0d1b2a" class="chap">
+    <div class="center">
+      <div class="chap-no">CHAPTER 2</div>
+      <h1 style="color:#fff;">ソルバのカスタマイズ手順</h1>
+      <p class="downhint">どのソルバが適しているか／4ステップ改造／なぜCN</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>どのソルバをベースにするか</h2>
+    <div class="cols">
+      <div>
+        <p>ベースは <code>laplacianFoam</code>。<br>
+        これは<strong>拡散方程式</strong>だけを解く最小ソルバ：</p>
+        <p class="center">\[ \frac{\partial T}{\partial t} = \nabla\!\cdot(D\nabla T) \]</p>
+        <p class="lead">シュレーディンガー方程式は「\(i\) 付きの拡散方程式」。
+        ラプラシアン \(\nabla^2\) が主役という<em>構造がそっくり</em>だから、改造の出発点に最適。</p>
+      </div>
+      <div class="box small">
+        <p style="margin:0"><strong>候補と選択</strong></p>
+        <ul style="margin:.3em 0 0 0;">
+          <li><code>laplacianFoam</code> … ✅ 拡散＝ラプラシアンが核。採用</li>
+          <li>scalarTransportFoam … 移流項が主役。<strong>今回は移流項が不要</strong>なので不適</li>
+          <li>icoFoam 等 … 圧力-速度連成で過剰</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>laplacianFoam を4点だけ改造</h2>
+    <table>
+      <thead><tr><th>#</th><th>改造点</th><th>ねらい</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>場を <strong>2本</strong>にする（<code>Psire</code>=u, <code>Psiim</code>=v）</td><td>複素波動関数を表現</td></tr>
+        <tr><td>2</td><td>式を <strong>GP方程式の連立</strong>に（\(V,\ g|\psi|^2\) を追加）</td><td>ポテンシャル・非線形項</td></tr>
+        <tr><td>3</td><td>実時間発展は <strong>Crank–Nicolson 反復</strong></td><td><em>ノルム保存</em>・安定</td></tr>
+        <tr><td>4</td><td>虚時間発展は <strong>完全陰的＋規格化</strong></td><td>基底状態づくり</td></tr>
+      </tbody>
+    </table>
+    <p class="lead" style="margin-top:.5em;"><code>mode</code> を切り替えるだけで「初期状態づくり（虚時間）」と「本計算（実時間）」を1つのソルバで。</p>
+  </section>
+
+  <section>
+    <h2>なぜ Crank–Nicolson なのか</h2>
+    <div class="cols">
+      <div>
+        <p class="box warn" style="margin:0"><strong>前進オイラーは発散する</strong><br>
+        1ステップごとに波がわずかに増幅 → 時間刻みを小さくしても最後は破綻。
+        大前提「ノルム保存」が数値的に壊れる。</p>
+      </div>
+      <div>
+        <p class="box" style="margin:0"><strong>CN＝ケーリー変換</strong><br>
+        \[ \psi^{n+1}=\frac{1-\tfrac{i}{2}H\Delta t}{1+\tfrac{i}{2}H\Delta t}\,\psi^{n} \]
+        \(H\) はエルミート → 更新係数の<em>絶対値がちょうど 1</em>。だからノルムが増えも減りもしない（ユニタリ）。</p>
+      </div>
+    </div>
+    <p class="lead small" style="margin-top:.5em;">
+    ＊OpenFOAM 組み込みの <code>CrankNicolson</code> は単一場の <code>ddt</code> 用。
+    ここは \(u\leftrightarrow v\) が連成し、ユニタリ性のための Picard 反復が要るので独自実装。</p>
+  </section>
+
+  <section>
+    <h2>Crank–Nicolson の離散化</h2>
+    <p style="font-size:.72em; margin:0 0 .2em;">解く式は \(i\,\frac{\partial\psi}{\partial t} = H\psi\)（\(H=-D\nabla^2+W,\ \ W=V+g|\psi|^2\)）。
+    時間微分を差分に、右辺 \(H\psi\) を<strong>前後の平均（台形則）</strong>で評価する：</p>
+    <p class="center" style="font-size:.92em; margin:.15em 0;">
+      \[ i\,\frac{\psi^{n+1}-\psi^{n}}{\Delta t}
+        = \tfrac12 H\big(\psi^{n+1}+\psi^{n}\big) \]</p>
+    <p class="center" style="font-size:.6em; color:var(--muted); margin:.1em 0;">↓ \(\psi^{n+1}\)（未知）を左辺、\(\psi^{n}\)（既知）を右辺に集める</p>
+    <p class="center big-eq" style="margin:.15em 0;">
+      \[ \underbrace{\Big(I+\tfrac{i\Delta t}{2}H\Big)}_{\text{陰的・疎行列}}\psi^{n+1}
+       = \underbrace{\Big(I-\tfrac{i\Delta t}{2}H\Big)}_{\text{陽的・既知}}\psi^{n} \]</p>
+    <div class="box" style="font-size:.72em;">
+      これが<em>ケーリー形</em>。両辺の演算子は互いに逆向きで大きさが等しく、\(|\psi^{n+1}|\) のノルムが保たれる。
+      \(\nabla^2\) は有限体積のラプラシアン（<code>fvm::laplacian</code>）で離散化 → 疎行列に。
+    </div>
+  </section>
+
+  <section>
+    <h2>アルゴリズム（1ステップ）</h2>
+    <div class="cols">
+      <div class="box small" style="border-left-color:var(--accent);">
+        <p style="margin:0"><strong>手順</strong></p>
+        <ol style="margin:.3em 0 0 0; font-size:.92em;">
+          <li>右辺 \(b=\big(I-\tfrac{i\Delta t}{2}H\big)\psi^{n}\) を作る（陽的・既知）</li>
+          <li>\(\big(I+\tfrac{i\Delta t}{2}H\big)\psi^{n+1}=b\) を<strong>線形ソルバで解く</strong>（陰的）</li>
+          <li>非線形 GP は \(W=V+g|\psi|^2\) が \(\psi\) に依存 → <em>Picard 反復</em>（<code>nCorrectors</code> 回）で \(W\) を更新しながら 2 を繰り返す</li>
+        </ol>
+      </div>
+      <div class="box small" style="border-left-color:var(--accent2);">
+        <p style="margin:0"><strong>実装（2場の連成）</strong></p>
+        <p style="margin:.3em 0 0; font-size:.92em;">\(\psi=u+iv\) なので、CN は \(u,v\) を<strong>連立</strong>で解く：</p>
+        <p class="center" style="font-size:.8em; margin:.2em 0;">
+          \[ \begin{aligned}
+            u^{n+1}+\tfrac{\Delta t}{2}H v^{n+1} &= u^{n}-\tfrac{\Delta t}{2}H v^{n}\\
+            v^{n+1}-\tfrac{\Delta t}{2}H u^{n+1} &= v^{n}+\tfrac{\Delta t}{2}H u^{n}
+          \end{aligned} \]</p>
+        <p style="margin:.2em 0 0; font-size:.85em;">\(u\) の式に \(v\) が、\(v\) の式に \(u\) が現れる → 2つの場を<strong>連立で同時に解く</strong>。</p>
+      </div>
+    </div>
+    <p class="lead small center" style="margin-top:.3em;">＊<strong>Picard反復</strong>：非線形項の係数 \(W=V+g|\psi|^2\) を仮の解で計算 → 線形問題を解く → 得た解で \(W\) を更新 → また解く…を繰り返して<strong>自己整合</strong>させる逐次代入法（不動点反復）。</p>
+    <p class="lead small center" style="margin-top:.15em;">虚時間発展は \(\Delta t\to -i\Delta\tau\) の置き換え。完全陰的に解けば無条件安定＋規格化で基底状態が残る。</p>
+  </section>
+</section>
+
+<!-- ============ CHAPTER 3 ============ -->
+<section>
+  <section data-background-color="#0d1b2a" class="chap">
+    <div class="center">
+      <div class="chap-no">CHAPTER 3</div>
+      <h1 style="color:#fff;">動作確認</h1>
+      <p class="downhint">ノルム保存と基底状態の検証</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Thomas–Fermi 半径とは（基底状態の理論値）</h2>
+    <p>基底状態は<strong>静的GP方程式</strong>（化学ポテンシャル \(\mu\)）で決まる：</p>
+    <p class="center big-eq">\[ \mu\,\psi = \Big[-\frac{\hbar^2}{2m}\nabla^2 + V(\mathbf r) + g|\psi|^2\Big]\psi \]</p>
+    <p class="center small" style="margin:-.1em 0 .2em;">左から <strong>運動エネルギー項</strong> \(-\frac{\hbar^2}{2m}\nabla^2\) ／ <strong>外部ポテンシャル</strong> \(V\) ／ <strong>相互作用項</strong> \(g|\psi|^2\)<br>（相互作用項があるのが<strong>GP方程式</strong>。無ければ通常のシュレーディンガー方程式）</p>
+    <p>相互作用が強い（粒子数が多い）と<strong>運動エネルギー項を無視</strong>できる → \(\mu=V+g\,n\)。ここで \(V=\tfrac12 m\omega^2 r^2\) は<strong>調和振動子ポテンシャル（トラップ）</strong>。密度 \(n=|\psi|^2\) は放物線状に決まる：</p>
+    <p class="center">\[ n(\mathbf r)=|\psi|^2=\frac{\mu-V(\mathbf r)}{g}=\frac{\mu-\tfrac12 m\omega^2 r^2}{g}\qquad(\text{端 }n=0\text{ が }R_{\rm TF}) \]</p>
+    <p class="lead center">\(\mu=\tfrac12 m\omega^2 R_{\rm TF}^2\) より <strong>\(R_{\rm TF}=\sqrt{2\mu/(m\omega^2)}\)</strong>（\(\mu\) は規格化 \(\int n\,d\mathbf r=N\) で決まる理論値）。</p>
+  </section>
+
+  <section>
+    <h2>動作確認</h2>
+    <ul style="font-size:.7em; margin-bottom:.4em;">
+      <li><em>ノルム保存</em>：実時間発展の全ステップで \(\int|\psi|^2\) が一定（前進オイラー版の発散を克服）。<em>基底状態</em>：虚時間発展で得た密度が理論（前ページの Thomas–Fermi）と一致。以降、答えの分かる<strong>線形問題</strong>で妥当性を確認 → 非線形の本番へ。</li>
+    </ul>
+    <div class="center">
+      <img src="../figures/02_trap_imaginaryTime/groundstate.png" style="width:92%; max-height:520px;">
+      <figcaption>虚時間発展で作った基底状態（Thomas–Fermi と一致）</figcaption>
+    </div>
+  </section>
+</section>
+
+<!-- ============ CHAPTER 4 ============ -->
+<section>
+  <section data-background-color="#0d1b2a" class="chap">
+    <div class="center">
+      <div class="chap-no">CHAPTER 4</div>
+      <h1 style="color:#fff;">トンネル効果</h1>
+      <p class="downhint">壁をすり抜ける波</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>トンネル効果</h2>
+    <p class="center" style="font-size:.92em; margin:.1em 0 .3em;">
+      \[ i\hbar\,\frac{\partial\psi}{\partial t} = -\frac{\hbar^2}{2m}\,\frac{\partial^2\psi}{\partial x^2} + V(x)\,\psi,
+         \qquad V(x)=\begin{cases}V_0 & (|x|&lt;a)\\ 0 & (\text{それ以外})\end{cases} \]</p>
+    <div class="cols">
+      <div>
+        <p>高さ \(V_0\)・幅 \(2a\) の<strong>矩形障壁</strong>。古典では \(E&lt;V_0\) の粒子は越えられない。</p>
+        <p class="box" style="margin-top:.3em;"><strong>なぜしみ出す？</strong> 障壁内では \(\psi''=+\kappa^2\psi\)（\(\kappa=\sqrt{2m(V_0{-}E)}/\hbar\)）で、波は振動せず<em>指数減衰</em> \(\psi\propto e^{-\kappa x}\)。\(\psi\) は連続でゼロに飛べず壁にしみ込み、<strong>薄ければ反対側に漏れて透過</strong>（\(T\sim e^{-2\kappa a}\)）。光の全反射のエバネッセント波と同じ。</p>
+      </div>
+      <div class="center">
+        <img src="../figures/00_1_tunneling_1D/magSqrPsi.gif" style="max-height:320px;">
+        <figcaption>障壁に当たった波束が反射と透過に分かれる（\(|\psi|^2\)）</figcaption>
+      </div>
+    </div>
+  </section>
+</section>
+
+<!-- ============ CHAPTER 5 ============ -->
+<section>
+  <section data-background-color="#0d1b2a" class="chap">
+    <div class="center">
+      <div class="chap-no">CHAPTER 5</div>
+      <h1 style="color:#fff;">調和振動子</h1>
+      <p class="downhint">形を保って振動するコヒーレント状態</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>調和振動子</h2>
+    <p class="center" style="font-size:.92em; margin:.1em 0 .3em;">
+      \[ i\hbar\,\frac{\partial\psi}{\partial t} = -\frac{\hbar^2}{2m}\,\frac{\partial^2\psi}{\partial x^2} + \tfrac12 m\omega^2 x^2\,\psi \]</p>
+    <div class="cols">
+      <div>
+        <p>放物線 \(V(x)=\tfrac12 m\omega^2 x^2\)。<strong>固有状態</strong> \(n=0,1,2,\dots\)（\(E_n=(n{+}\tfrac12)\hbar\omega\)）は<em>定常</em>で \(|\psi|^2\) は動かない。</p>
+        <p class="box small" style="margin-top:.25em;"><strong>なぜ図は動く？</strong> これは<strong>コヒーレント状態</strong>＝固有状態の<em>重ね合わせ</em>。エネルギーの違う成分の位相が別々の速さで回り、その<em>干渉</em>で \(|\psi|^2\) が動く。準位間隔が一定 \((\hbar\omega)\) なので広がらず、<strong>古典粒子と同じ振動</strong>。</p>
+        <p class="small" style="margin-top:.25em;"><strong>やったこと</strong>：基底状態のガウスを中心から \(x_0\) ずらした初期条件で実時間発展 → \(x_c(t)=x_0\cos\omega t\) で往復を確認。</p>
+      </div>
+      <div class="center">
+        <img src="../figures/00_2_harmonicOscillator_1D/magSqrPsi.gif" style="max-height:300px;">
+        <figcaption>アニメーションは \(|\psi(x,t)|^2\)：形を保って往復</figcaption>
+      </div>
+    </div>
+  </section>
+</section>
+
+<!-- ============ CHAPTER 6 ============ -->
+<section>
+  <section data-background-color="#0d1b2a" class="chap">
+    <div class="center">
+      <div class="chap-no">CHAPTER 6</div>
+      <h1 style="color:#fff;">GP方程式の渦問題<br>（量子流体）</h1>
+      <p class="downhint">相互作用を入れると超流動・量子渦の世界へ</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>ボース・アインシュタイン凝縮（BEC）とは</h2>
+    <div class="cols">
+      <div>
+        <p><strong>非常に低温</strong>にすると、ボース粒子（原子）の大多数が<strong>最低エネルギー準位に落ち込む</strong>＝ボース・アインシュタイン凝縮。</p>
+        <p class="box" style="margin-top:.3em;">個々の粒子の個性が消え、集団全体を<em>1つの巨視的な波動関数</em> \(\psi(\mathbf r,t)\) で書ける（秩序変数）。
+        密度 \(n=|\psi|^2\) と位相 \(\theta\) をもつ<strong>粘性ゼロの圧縮性量子流体（超流動）</strong>。その支配方程式が次の GP 方程式。</p>
+      </div>
+      <div class="center">
+        <img src="bec_levels.png" style="max-height:300px;">
+        <figcaption>高温＝準位に分散／低温＝最低準位に凝縮（BEC）<br><span style="font-size:.8em;">図：takun-physics.net より</span></figcaption>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Gross–Pitaevskii（GP）方程式</h2>
+    <p>BECの巨視的波動関数 \(\psi\) の時間発展を決める方程式。<strong>シュレーディンガー方程式との違いは相互作用項</strong> \(g|\psi|^2\) があること：</p>
+    <p class="center big-eq">\[ i\hbar\,\frac{\partial\psi}{\partial t} = \Big[-\frac{\hbar^2}{2m}\nabla^2 + V_\mathrm{ex} + g|\psi|^2\Big]\psi \]</p>
+    <div class="cols">
+      <div class="box small">
+        <p style="margin:0"><strong>各項の意味</strong></p>
+        <ul style="margin:.2em 0 0;">
+          <li>\(V_\mathrm{ex}\)：原子を閉じ込める捕獲ポテンシャル</li>
+          <li>\(g|\psi|^2\)：近接相互作用（希薄気体）＝流体の<strong>「圧力」</strong>に相当</li>
+        </ul>
+      </div>
+      <div class="box warn small">
+        <p style="margin:0"><strong>\(\psi\) の意味も違う</strong></p>
+        <ul style="margin:.2em 0 0;">
+          <li>シュレーディンガー：\(|\psi|^2\)＝<em>存在確率密度</em>、\(\int|\psi|^2=1\)</li>
+          <li>GP：\(|\psi|^2\)＝<em>粒子数密度 \(n\)</em>、\(\int|\psi|^2=N\)（総粒子数）</li>
+        </ul>
+        <p style="margin:.2em 0 0;">→ 積分したときの意味が違う</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>まず古典流体の渦（3タイプ）</h2>
+    <div class="cols">
+      <div class="center" style="flex:1.9;">
+        <img src="vortex_types.png" style="width:100%; height:auto;">
+        <figcaption>周方向速度 \(v_\theta\) のプロファイル。図：takun-physics.net より</figcaption>
+      </div>
+      <div class="small">
+        <ul>
+          <li><strong>自由渦</strong>：\(v_\theta\propto 1/r\)。芯から離れるほど遅い（排水口の渦）。</li>
+          <li><strong>強制渦</strong>：\(v_\theta\propto r\)。剛体回転（コップを回した水）。</li>
+          <li><strong>ランキン渦</strong>：芯は強制渦・外は自由渦の<strong>組み合わせ</strong>（台風）。現実の渦はこれ。</li>
+        </ul>
+        <p class="box" style="margin-top:.3em;">量子渦は、遠方で<em>自由渦と同じ</em> \(v_\theta\propto1/r\) になる。違いは次のスライド。</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>量子渦とは（古典渦との違い）</h2>
+    <p class="small">波動関数 \(\psi=\sqrt{n}\,e^{i\theta}\) は<strong>1価</strong>（速度場 \(\mathbf v=\frac{\hbar}{m}\nabla\theta\)）。渦を1周した位相変化は \(2\pi\) の<strong>整数倍</strong>に限られ、循環が \(\kappa=h/m\)（<strong>循環量子</strong>）の整数倍に<strong>量子化</strong>される。</p>
+    <div class="center">
+      <img src="vortex_classical_vs_quantum.png" style="width:38%; height:auto;">
+      <figcaption style="font-size:.7em;">古典流体（ランキン渦）と量子流体（量子渦）の比較。図：takun-physics.net より</figcaption>
+    </div>
+    <p class="lead center" style="margin-top:.2em;">要点：<strong>循環の量子化</strong>・<strong>密度ゼロの明確な芯</strong>・<strong>無粘性で安定</strong>（消えない位相欠陥）。だから量子渦は“粒”のように数えられる。</p>
+  </section>
+
+  <section>
+    <h2>補足：GPが使えるのは「希薄」なBEC</h2>
+    <div class="cols">
+      <div class="box small">
+        <p style="margin:0"><strong>希薄BEC（原子気体）○</strong></p>
+        <ul style="margin:.2em 0 0;">
+          <li>弱い相互作用（\(n a_s^3\ll1\)）→ 平均場GPが<strong>定量的に正確</strong></li>
+          <li>凝縮率はほぼ100%</li>
+          <li>渦芯 \(\xi\sim0.1\)–\(1\,\mu\mathrm{m}\) → <strong>格子で解像でき、GPを直接計算できる</strong>（本ソルバ）</li>
+        </ul>
+      </div>
+      <div class="box warn small">
+        <p style="margin:0"><strong>超流動ヘリウム △</strong></p>
+        <ul style="margin:.2em 0 0;">
+          <li>強相関の液体（\(n a^3\sim0.1\)）→ GPは<strong>定量的には不適</strong>（ロトン等）</li>
+          <li>凝縮率はわずか約10%</li>
+          <li>渦芯 \(\xi\sim0.1\,\mathrm{nm}\)（原子サイズ）→ 解像不可 → <strong>渦糸法</strong>（渦を細い糸として Biot–Savart で追う）が主流</li>
+        </ul>
+      </div>
+    </div>
+    <p class="lead center" style="margin-top:.2em;">同じ「超流動・量子渦」でも、<strong>薄い気体はGP直接計算／濃いHeは渦糸法</strong>という住み分け。</p>
+  </section>
+
+  <section>
+    <h2>走る渦対（渦-反渦ダイポール）</h2>
+    <div class="center">
+      <img src="../figures/03_1_vortexDipole_muShift/density_phase_muShift.gif" style="max-height:300px;">
+      <figcaption>密度（左）と位相（右）。渦(+1)と反渦(−1)が対で一定速度で並進（位相の背景を \(H-\mu\) で静止）</figcaption>
+    </div>
+    <p class="lead center" style="font-size:.72em;"><strong>導出</strong>：1本の渦は周りに \(v_\theta=\dfrac{\kappa}{2\pi r}\)（\(\kappa=h/m\)）の流れをつくる。各渦は<strong>相手の作る流れに乗って</strong>動く → 反渦は渦から距離 \(d\) の点で \(\dfrac{\kappa}{2\pi d}\) の速度を受ける。対称なので対全体が間隔 \(d\) を保ったまま \[ v=\frac{\kappa}{2\pi d}=\frac{\hbar}{m\,d} \] で並進。実測がこの理論値と一致。</p>
+  </section>
+
+  <section>
+    <h2>ダークソリトンの崩壊 → 量子乱流</h2>
+    <div class="center">
+      <img src="../figures/04_1_darkSoliton_whiteNoise_muShift/density_phase_muShift.gif" style="max-height:320px;">
+      <figcaption>密度（左）・位相（右）。まっすぐな溝が snake instability で波打ち、多数の量子渦へ崩壊</figcaption>
+    </div>
+    <p class="lead center"><strong>種（摂動）があって初めて崩壊</strong>：きれいな溝は「不安定だが定常」。ノイズを入れると乱流まで崩れる。</p>
+  </section>
+
+  <section>
+    <h2>補足：位相欠陥と渦の対消滅</h2>
+    <div class="cols">
+      <div class="box small">
+        <p style="margin:0"><strong>位相欠陥とは</strong></p>
+        <p style="margin:.2em 0 0;">\(\psi=\sqrt{n}\,e^{i\theta}\)。渦を1周すると \(\theta\) が \(2\pi\) 巻く → 中心は位相が定義できない<strong>特異点</strong>。\(\psi\) を1価に保つため、そこで密度 \(n=0\)。この「巻き数（整数）をもつ特異点」が位相欠陥。巻き数は連続変形で変えられない（<strong>トポロジカル</strong>）ので、孤立した1個は消えない（結晶の転位と同じ発想）。</p>
+      </div>
+      <div class="box warn small">
+        <p style="margin:0"><strong>なぜ渦がぶつかって消える？</strong></p>
+        <p style="margin:.2em 0 0;">渦(\(+1\))と反渦(\(-1\))は巻き数が逆で合計0。出会うと \(+2\pi\) と \(-2\pi\) が打ち消し合い<strong>対消滅</strong>（全体の巻き数0は保存＝矛盾しない）。放出エネルギーは<strong>音波（フォノン）</strong>へ。同符号どうしは反発して消えない。</p>
+      </div>
+    </div>
+    <p class="lead center" style="margin-top:.2em;">ダークソリトン崩壊は渦-反渦ペアを大量に生む → あちこちで<strong>対消滅</strong>が起きる（無粘性でも渦が減る）。</p>
+  </section>
+</section>
+
+<!-- ============ CHAPTER 7 ============ -->
+<section>
+  <section data-background-color="#0d1b2a" class="chap">
+    <div class="center">
+      <div class="chap-no">CHAPTER 7 ─ 山場</div>
+      <h1 style="color:#fff;">ナビエ・ストークスと<br>同じ方程式が出る</h1>
+      <p class="downhint">Madelung 変換で GP＝流体方程式</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Madelung 変換</h2>
+    <p>GP方程式に、波動関数を「振幅×位相」で書いた形を代入する：</p>
+    <p class="center big-eq">\[ \psi=\sqrt{n}\;e^{i\theta},\qquad \mathbf{v}=\frac{\hbar}{m}\nabla\theta \]</p>
+    <p>\(n=|\psi|^2\) は<strong>流体の密度</strong>、\(\mathbf{v}\) は<strong>流速</strong>。実部・虚部に分けて整理すると…</p>
+  </section>
+
+  <section>
+    <h2>GP方程式＝圧縮性・非粘性の流体方程式</h2>
+    <p><strong>流速は位相からも波動関数からも定義できる</strong>：\(\mathbf v=\dfrac{\hbar}{m}\nabla\theta=\dfrac{\hbar}{m}\dfrac{\mathrm{Im}(\psi^{*}\nabla\psi)}{|\psi|^2}\)（密度は \(n=|\psi|^2\)）。これを使うと、次の2つの式が導けます。</p>
+    <p><strong>連続の式</strong>（質量保存）：</p>
+    <p class="center">\[ \frac{\partial n}{\partial t} + \nabla\!\cdot(n\mathbf{v}) = 0 \]</p>
+    <p><strong>オイラー方程式</strong>（運動量保存）＋量子圧力：</p>
+    <p class="center">\[ m\Big(\frac{\partial\mathbf{v}}{\partial t}+(\mathbf{v}\!\cdot\!\nabla)\mathbf{v}\Big)
+       = -\nabla(V+g\,n) + \frac{\hbar^2}{2m}\nabla\!\Big(\frac{\nabla^2\sqrt{n}}{\sqrt{n}}\Big) \]</p>
+    <div class="box">
+      <p style="margin:0;">右辺は \(-\nabla(V+g\,n)\)＝<strong>ポテンシャル＋圧力</strong>（\(g\,n\) は状態方程式 \(P\propto n^2\)）と<strong>量子圧力（Bohm項）</strong>。
+      ＝<em>非粘性ナビエ・ストークス（オイラー方程式）</em>＋量子圧力。<strong>方程式の形が流体そのものなので、同じ数値解法（有限体積法＝OpenFOAM）で解ける</strong>。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>通常の流体（NS） vs 量子流体（GP）</h2>
+    <p style="font-size:.68em; margin:.1em 0 .3em;">運動方程式を項ごとに並べると大半は同じ。違いは<strong>粘性項</strong>と<strong>量子圧力項</strong>の2つだけ。</p>
+    <div style="display:flex; justify-content:center;">
+    <table style="width:92%; font-size:.62em;">
+      <thead><tr><th style="width:22%;">項目</th><th>通常の流体（ナビエ・ストークス）</th><th>量子流体（GP）</th></tr></thead>
+      <tbody>
+        <tr><td>時間変化</td><td>\(\dfrac{\partial\mathbf v}{\partial t}\)</td><td>\(\dfrac{\partial\mathbf v}{\partial t}\)</td></tr>
+        <tr><td>移流項</td><td>\((\mathbf v\!\cdot\!\nabla)\mathbf v\)</td><td>\((\mathbf v\!\cdot\!\nabla)\mathbf v\)</td></tr>
+        <tr><td>圧力項</td><td>\(-\dfrac{1}{mn}\nabla p\)</td><td>\(-\dfrac{1}{mn}\nabla p\)</td></tr>
+        <tr style="background:#fdecea;"><td><strong>粘性項</strong></td><td>\(\nu\nabla^2\mathbf v\)</td><td><strong>無</strong></td></tr>
+        <tr><td>外部ポテンシャル</td><td>\(-\dfrac{1}{m}\nabla V\)</td><td>\(-\dfrac{1}{m}\nabla V\)</td></tr>
+        <tr style="background:#eaf2fd;"><td><strong>量子圧力項</strong></td><td><strong>無</strong></td><td>\(\dfrac{1}{m}\nabla\!\Big(\dfrac{\hbar^2}{2m\sqrt n}\nabla^2\sqrt n\Big)\)</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="lead center" style="margin-top:.25em;"><strong>NSにあってGPにないのが粘性</strong>（量子流体は無粘性＝超流動）、<strong>GPにあってNSにないのが量子圧力</strong>。それ以外は同じ形。</p>
+  </section>
+
+  <section>
+    <h2>ケルビンの循環定理（古典・非粘性）</h2>
+    <div class="cols">
+      <div class="center" style="flex:1.1;">
+        <img src="kelvin_loop.png" style="width:100%; height:auto;">
+        <figcaption>流体とともに動く閉曲線 \(C\)（\(t\to t+\Delta t\)）。図：takun-physics.net より</figcaption>
+      </div>
+      <div>
+        <p class="center">\[ \frac{d\Gamma}{dt}=0,\quad \Gamma=\oint_{C}\mathbf v\cdot d\mathbf l \]</p>
+        <p class="small">非粘性・バロトロピック（圧力が密度だけで決まる）な流体では、<strong>流体と一緒に動くループ \(C\)</strong> 上の循環 \(\Gamma\) が保存。帰結：</p>
+        <ul class="small">
+          <li>渦のない状態（\(\Gamma=0\)）からは<strong>渦は生成しない</strong>（できた渦も消えない）。</li>
+          <li>一度できた渦は<strong>消えず、流れに乗って運ばれるだけ</strong>。しかも渦の芯は途中で途切れず、<strong>輪になる</strong>か端（境界・無限遠）まで続く。</li>
+          <li>現実で渦ができるのは<strong>粘性が定理を破る</strong>から（渦度を生成・拡散）。</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>GP方程式は粘性ゼロでも渦を生む</h2>
+    <p>GP方程式には粘性項がありません。それならケルビンの定理どおり、渦のない状態からは渦ができないように思えます。ここで効いてくるのが<strong>量子圧力項</strong>です。</p>
+    <p class="center">\[ \frac{\hbar^2}{2m}\nabla\!\Big(\frac{\nabla^2\sqrt{n}}{\sqrt{n}}\Big) \]</p>
+    <div class="box">
+      <p style="margin:0;">量子圧力があるおかげで、<strong>密度をゼロに落としてもエネルギーが発散しません</strong>。すると、その密度ゼロ点に位相が \(2\pi\) 巻いた<strong>量子渦</strong>を作れます。渦ができるとそれを囲むループの循環が \(\kappa=h/m\) だけ変わる（＝「渦なし」から「渦あり」へ）。<strong>粘性ゼロでも渦が生成できる</strong>のはこのためで、これは古典の非粘性流体（ケルビンの定理）では起こりません。</p>
+    </div>
+    <p class="lead center" style="margin-top:.2em;">実例：ダークソリトンが崩れて密度ゼロの節ができる所に、位相の \(2\pi\) 巻き＝量子渦が生まれます。</p>
+  </section>
+</section>
+
+<!-- ============ CHAPTER 8 ============ -->
+<section>
+  <section data-background-color="#0d1b2a" class="chap">
+    <div class="center">
+      <div class="chap-no">CHAPTER 8</div>
+      <h1 style="color:#fff;">今後の発展</h1>
+      <p class="downhint">2次元量子乱流BECの自由膨張へ</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>トラップ解放：量子 vs 古典</h2>
+    <div class="center">
+      <img src="../figures/00_3_release2D/density_with_potential_section.gif" style="width:52%; height:auto;">
+      <figcaption style="font-size:.5em;">左＝量子（OpenFOAM）／右＝古典（同じ初期密度＋等方な熱速度）。下段＝\(y=0\) の密度断面と有効ポテンシャル \(V\)（赤破線）。</figcaption>
+    </div>
+    <div class="cols" style="margin-top:.15em;">
+      <div class="box small">
+        <p style="margin:0"><strong>量子 → 反転する</strong></p>
+        <p style="margin:.15em 0 0;"><em>不確定性原理</em> \(\Delta p\gtrsim \hbar/\Delta x\)：きつく閉じ込めた軸ほど運動量の広がりが大きい → その軸へ速く膨張。</p>
+      </div>
+      <div class="box warn small">
+        <p style="margin:0"><strong>古典 → 反転しない</strong></p>
+        <p style="margin:.15em 0 0;">速度の広がりは温度だけの<em>等方的</em>なもの（等分配 \(\langle v^2\rangle=k_BT/m\)）→ どの向きも同じ速さで膨張し丸くなる。</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>実験：通常のBEC vs 量子乱流</h2>
+    <div class="center">
+      <img src="古典_量子乱流.png" style="width:40%; max-height:280px;">
+      <figcaption>解放後の飛行時間イメージ（5/10/15 ms）。左＝通常のBEC／右＝量子乱流BEC（Henn et al., PRL 2009）</figcaption>
+    </div>
+    <div class="cols" style="margin-top:.25em;">
+      <div class="box small">
+        <p style="margin:0"><strong>通常のBEC（渦なし）</strong></p>
+        <p style="margin:.15em 0 0;">解放すると<strong>アスペクト比が反転</strong>（前ページと同じ）。短軸方向へ速く伸びる。</p>
+      </div>
+      <div class="box warn small">
+        <p style="margin:0"><strong>量子乱流BEC（多数の量子渦）</strong></p>
+        <p style="margin:.15em 0 0;">解放しても<strong>アスペクト比を保ったまま自己相似的に膨張</strong>する（反転しない）。</p>
+      </div>
+    </div>
+    <p class="lead center" style="margin-top:.2em;">なぜ乱流だとアスペクト比が保たれるのか。ここを調べたい。</p>
+  </section>
+
+  <section>
+    <h2>何をしたいか（研究計画）</h2>
+    <ul>
+      <li><code>schrodingerFoam</code> で <strong>2次元の量子乱流</strong>（多数の量子渦）をつくる。</li>
+      <li>異方トラップを外して<strong>自由膨張</strong>させる。</li>
+      <li>膨張で<strong>アスペクト比が保たれるか</strong>を調べる（上の実験の再現）。</li>
+      <li>保たれる条件を特定する：<strong>渦の数・配置・偏り</strong>のどれが効くのか。</li>
+    </ul>
+    <p class="box">技術課題：相互作用ありの乱流をつくること／箱の端での反射を防ぐこと（吸収境界・領域拡大）。</p>
+  </section>
+</section>
+
+<!-- ============ SUMMARY ============ -->
+<section>
+  <!-- divider -->
+  <section data-background-color="#0d1b2a" class="chap">
+    <div class="center">
+      <div class="chap-no">SUMMARY</div>
+      <h1 style="color:#fff;">まとめ</h1>
+      <p class="downhint">今日の要点</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>まとめ</h2>
+    <ul>
+      <li>OpenFOAM は<em>PDE ソルバ</em>。シュレーディンガー／GP方程式も PDE だから解ける。</li>
+      <li>鍵は<strong>時間の刻み方</strong>：Crank–Nicolson（ケーリー変換）でノルム保存。</li>
+      <li>線形（トンネル・調和振動子）→ 非線形の量子流体（渦・ダークソリトン崩壊）まで<strong>1つの自作ソルバ</strong>で。</li>
+      <li><em>Madelung 変換</em>で GP＝オイラー方程式＋量子圧力。量子力学と CFD は同じ土俵。</li>
+    </ul>
+  </section>
+
+  <section data-background-color="#0d1b2a">
+    <div class="center">
+      <h1 style="color:#fff;">ありがとうございました</h1>
+      <p class="lead" style="color:#c7d3e0; margin-top:1em;">コード：github.com/kamakiri1225/schrodingerFoam</p>
+      <p class="lead" style="color:#8ea3b8;">解説：ブログ全7回（takun-physics.net）</p>
+    </div>
+  </section>
+</section>
+
+</div>
+</div>
+
+<div class="footer">OpenFOAM × 量子力学 ─ schrodingerFoam</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/plugin/math/math.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/plugin/notes/notes.js"></script>
+<script>
+  Reveal.initialize({
+    hash: true,
+    slideNumber: 'c/t',
+    transition: 'slide',
+    width: 1280, height: 800,
+    margin: 0.06,
+    navigationMode: 'default',
+    plugins: [ RevealMath.MathJax3, RevealNotes ],
+    mathjax3: {
+      mathjax: 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js',
+      tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea','pre'] }
+    }
+  });
+</script>
+</body>
+</html>
