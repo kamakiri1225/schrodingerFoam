@@ -62,7 +62,8 @@ openfoam2512 -c 'cd run/01_darkSoliton_realTime && blockMesh && schrodingerFoam'
 ```
 
 ## 参考
-- カマキリ（宇宙に入ったカマキリ）「2次元ダークソリトンの崩壊」（GP方程式・Fortran）
-- gucong.org "Numerical solving of non-linear Schrödinger equation"
-
-> 元となる物理記事は筆者（リポジトリ所有者）自身のブログ記事に基づく。
+- 理論・物理の解説は、筆者（リポジトリ所有者）自身のブログ
+  **[宇宙に入ったカマキリ](https://takun-physics.net/)** の記事に基づく
+  （GP方程式、ダークソリトンの崩壊、量子渦、量子流体のオイラー方程式 など）。
+  もともとの実装は Fortran で「2次元ダークソリトンの崩壊」を計算していた。
+- 数値解法の参考：gucong.org "Numerical solving of non-linear Schrödinger equation"。
