@@ -1,0 +1,32 @@
+FoamFile { version 2.0; format ascii; class volScalarField; object psi; }
+dimensions      [0 0 0 0 0 0 0];
+internalField   #codeStream
+{
+    codeInclude #{ #include "fvCFD.H" #};
+    codeOptions #{ -I$(LIB_SRC)/finiteVolume/lnInclude -I$(LIB_SRC)/meshTools/lnInclude #};
+    codeLibs    #{ -lfiniteVolume -lmeshTools #};
+    code
+    #{
+        const IOdictionary& d = static_cast<const IOdictionary&>(dict);
+        const fvMesh& mesh = refCast<const fvMesh>(d.db());
+        scalarField psi(mesh.nCells());
+        forAll(psi, i)
+        {
+            const scalar x = mesh.C()[i].x();
+            const scalar y = mesh.C()[i].y();
+            const scalar z = mesh.C()[i].z();
+            const scalar r2 = x*x + y*y + z*z;
+            // Gaussian initial guess; imaginary time relaxes it to the 1s state.
+            psi[i] = Foam::exp(-0.5*r2);
+        }
+        psi.writeEntry("", os);
+    #};
+};
+boundaryField
+{
+    outer
+    {
+        type            fixedValue;
+        value           uniform 0;
+    }
+}
