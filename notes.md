@@ -731,6 +731,40 @@ Re を整数ステップ、Im を半整数ステップに置く：
 `constant/gpProperties` で `mode realTimeVisscher;`（他は realTime と同じ設定でよい）。
 安定条件 $\Delta t\lesssim 2/\lVert H\rVert$ は realTime と同じ。
 
+## 6.20 きれいな初期条件づくり：位相固定の虚時間発展（fixPhase）
+
+`docs/main.pdf`（小林 博士論文）p.23 の「ダークソリトンの正方格子から2次元量子乱流」を、
+**スプリアスな音波の無いきれいな初期条件**から始める方法。
+
+### なぜ必要か
+`tanh` の積で位相（0/πのチェッカーボード）を刷り込んだだけの場は GP の厳密解ではなく、
+放っておくと音波を放出する。かといって**自由な虚時間発展はソリトン/渦（＝励起状態）を消して**
+一様な基底状態に落としてしまう。そこで**位相を固定したまま振幅だけ緩和**する
+（solver 実装：`imaginaryTime` + `fixPhase true`。毎ステップ `Psi <- |Psi| e^{i theta0}`）。
+
+### 2段ワークフロー（ケース 05, 07）
+各ケースを `imaginaryTime/` と `realTime/` の2フォルダに分ける。
+
+1. **imaginaryTime/**：`Psire` に `tanh` 格子（ノイズ無し）、`Psiim=0`。
+   `fixPhase true`, `normalize true`, `targetNorm = 域体積`（bulk $n_0=1$）。
+   → 位相を保ったまま密度が緩和し、**密度=1・芯で0 のきれいなソリトン格子**に収束
+   （07 で確認：mean 1.000, min 0, μ≈1.37）。
+   - **注意**：`targetNorm` はノルム＝**体積積分**なので、bulk 1 にするには
+     `targetNorm = Lx*Ly*dz`（例：48×48×0.25 = **576**）。面積 2304 だと bulk=4 になる。
+2. **realTime/**：imaginaryTime の収束場をコピーし、振幅 $10^{-2}$ の**白色ノイズを付与**
+   （`tools/…` の field 直接編集、あるいは別途）。`mode realTime`, `muShift 1`（チカチカ無し）。
+   → snake instability で格子が崩れ**2次元量子乱流**へ。
+
+### 出力形式の注意
+solver の場出力は `controlDict` の `writeFormat`（既定 binary のことあり）。
+ノイズ付与を Python で行うので **`writeFormat ascii`** にしておく。
+
+### ケース
+- `run/07_solitonLattice_whiteNoise_muShift/`：p.23 の**4×4 ソリトン正方格子**
+  （x,y のソリトンを ±6,±18 に配置、位相 0/π）。領域 ±24 / 192²。
+- `run/05_darkSoliton8_whiteNoise_muShift/`：比較用の**1次元縞8本**（y方向不変）版。
+- 解析：`tools/qt_spectrum.py`（$E^i(k),E^c(k)$＋渦点±1）、`tools/qt_flux.py`（カスケード方向）。
+
 ## 7. 環境メモ
 
 - インストール済み: `/usr/lib/openfoam/` に **openfoam2406 / openfoam2506 / openfoam2512** が併存。他に `/opt/openfoam13`（Foundation）。
