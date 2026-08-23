@@ -558,6 +558,121 @@ $\sigma_{j0}=1/\omega_j$ なので初期幅が $(32,0.5)$ となり、量子の�
 [`docs/research_plan_2D_quantum_turbulence_free_expansion.md`](docs/research_plan_2D_quantum_turbulence_free_expansion.md)
 に整理した。
 
+## 6.16 OpenFOAM の complex クラス調査（v2512・2026-08-23）
+
+勉強会で「OpenFOAM に複素数クラスがあるので、それを使えば実部・虚部に分けずに
+書けるのでは」というコメントをもらったので、v2512（ESI版）のソース実体
+（`/usr/lib/openfoam/openfoam2512/src`）を調査した。
+
+### 結論
+
+**complex クラスは v2512 にもあるが、「複素場の陰的ソルブ」には使えない。
+実部 u・虚部 v を2つの `volScalarField` に分けて連立する現方式が正解。**
+
+### 調査内容（証拠）
+
+**あるもの**
+
+- `primitives/complex/complex.H`（複素スカラー。四則・`sqrt/exp/log`・共役・`mag`）
+- `fields/Fields/complex/complexField.H`（複素の `Field`。実部/虚部の zip/unzip）
+- `complexVector` / `complexVectorField`
+
+**ないもの（finiteVolume 側）**
+
+- `GeometricField<complex>`（= volComplexField 相当）→ **実体なし**
+- `fvMatrix<complex>` → **実体なし**。`fvMatrix`/`fvm::` がインスタンス化される型は
+  `fieldTypes.H` の `FOR_ALL_FIELD_TYPES` マクロで
+  **scalar / vector / sphericalTensor / symmTensor / tensor のみ**。
+- `complexField` の使用先は **FFT・固有値（`EigenMatrix`）・式評価（expressions）だけ**で、
+  finiteVolume では一切使われていない。
+
+**根本的な理由（実装しても標準ソルバでは無理な理由）**
+
+- 線形ソルバの基盤 `lduMatrix` の係数 `diag/upper/lower` は **`scalarField`（実数）**。
+  行列係数に虚数を入れられない。
+- CN更新 $(I+\tfrac{i\Delta t}{2}H)\psi^{n+1}=(I-\tfrac{i\Delta t}{2}H)\psi^{n}$ の
+  左辺は**複素係数**なので、実係数 lduMatrix では表現不能。
+- `fvMatrix<Type>`（vector等）は「各成分を**同じ実行列で独立に**解く」segregated 方式。
+  complex を無理に載せても Re/Im が独立に解かれ、シュレーディンガーの連成
+  （$\nabla^2 v \to \partial_t u$、$\nabla^2 u \to \partial_t v$）を陰的に表せず**誤った解**になる。
+- 標準リリースに**ブロック連成行列は無い**（`fvBlockMatrix`/`BlockLduMatrix` は
+  foam-extend 系のみ。v2512 には存在しない）。
+
+### native complex でやりたい場合の選択肢
+
+1. **PETSc 連携（petsc4Foam）**：v2512 に `etc/config.sh/petsc`・`have_petsc` あり。
+   PETSc は複素数・ブロック連成系を扱えるので、複素係数の陰的系を外部ソルバで解ける。
+   ただし導入・保守コストが高い。
+2. **2×2 ブロック連成行列の自作**：foam-extend の `fvBlockMatrix` 相当を移植。大工事。
+3. **現方式（採用）**：u, v の2本の `volScalarField` ＋ CN + Picard 反復。
+   `fvm::` は scalar に完全対応しており、最も素直。
+
+complex クラスが役立つのは「明示的な代数」（例：後処理で $\psi=u+iv$ を組んで
+$e^{i\theta}$ を評価、FFT スペクトル解析）に限られる。
+
+## 6.17 laplacianFoam からシュレーディンガー方程式を解く有効な手段（比較・2026-08-23）
+
+6.16 の調査を踏まえ、実2場（u=Psire, v=Psiim）方式での時間積分法を比較する。
+**鍵となる構造**：実時間の方程式 $\partial_t u=+Hv,\ \partial_t v=-Hu$ は
+(u,v) について**純オフダイアゴナル**。u の式には u 自身が現れないため、
+**segregated な `fvm::`（対角陰的）では実時間の連成を陰的化できない**。
+これが本ソルバの realTime が `fvc::`（明示的評価）＋反復で書かれている理由である
+（`fvm::` が意味を持つのは、各場が自分自身の拡散でダンプされる虚時間側のみ）。
+
+### (A) 前進オイラー（不可）
+
+増幅率 $|G|^2 = 1+(E\Delta t/\hbar)^2 > 1$ で**無条件不安定**（§2 参照）。
+
+### (B) 現方式：CN（台形）＋ Picard 不動点反復（採用）
+
+$\psi^{n+1}=\psi^n+\tfrac{\Delta t}{2}[F(\psi^{n+1})+F(\psi^n)]$ を
+`fvc::laplacian` による明示評価の不動点反復（Gauss–Seidel、`nCorrectors` 回）で解く。
+
+- 収束すれば**離散的にユニタリ**（CN＝ケーリー変換）。ノルム保存を実測確認済み。
+- ただし**無条件安定ではない**。不動点反復の収束条件はおよそ
+  $\Delta t \lesssim 2/\lVert H\rVert$。離散ラプラシアンの最大固有値は
+  $4d/\Delta x^2$（$d$=次元）なので $\lVert H\rVert\approx 4dD/\Delta x^2 + W_{max}$。
+  本ケース（2D, $D=0.5,\ \Delta x=0.25,\ W\sim1$）では
+  $\lVert H\rVert\approx 65$、$\Delta t\,\lVert H\rVert/2\approx 0.16$（$\Delta t=0.005$）
+  → 1反復あたり誤差が×0.16、4反復で $\sim 7\times10^{-4}$ まで縮む。
+  `nCorrectors 4` が効く理由はこれ。**刻みを大きくしすぎると反復が発散**する
+  （スケーリングは陽解法と同じ $\Delta t\propto\Delta x^2$、係数は緩い）。
+
+### (C) Visscher の staggered 陽解法（有効な代替）
+
+Visscher (1991)：u を整数ステップ、v を半整数ステップに置く leapfrog。
+$u^{n+1}=u^n+\Delta t\,Hv^{n+1/2}$, $v^{n+3/2}=v^{n+1/2}-\Delta t\,Hu^{n+1}$。
+
+- 反復不要（H 適用が各場1回/step）→ **現方式の約 1/nCorrectors のコスト**。
+- 離散ノルム $u^n{}^2+v^{n+1/2}v^{n-1/2}$ を**厳密に保存**。
+- 安定条件 $\Delta t\le 2/\lVert H\rVert$（＝(B) と同じスケーリング）。
+- 純オフダイアゴナル構造をそのまま活かす、実時間専用の定番手法。
+
+### (D) Strang 分割（非線形が強いときに有効）
+
+$e^{-i(V+g|\psi|^2)\Delta t/2}\, e^{-iT\Delta t}\, e^{-i(V+g|\psi|^2)\Delta t/2}$。
+ポテンシャル＋非線形ステップは各セルで (u,v) の**厳密な回転**
+（$|\psi|^2$ はその間不変 → **Picard 不要・ノルム厳密保存**）。
+運動項ステップだけ (B) か (C) で解く。2次精度。
+スペクトル版が標準の TSSP（Bao–Jaksch–Markowich 2003）。
+FV のままでも「非線形の反復を消す」効果があり、$g$ が大きい系で堅牢。
+
+### (E) 完全陰的（複素 or ブロック連成）：刻み制限を外したい場合のみ
+
+$\Delta t\propto\Delta x^2$ の制限を根本的に外すには (u,v) 連成の陰的解法が必要
+＝ 6.16 の PETSc（petsc4Foam）連携 or ブロック行列自作。導入コスト大。
+現在の解像度・時間刻みでは (B)(C) で十分なので不要。
+
+### 結論
+
+- **v2512 の枠内では、実2場＋(B) が正解**（実装済み・検証済み）。
+- 速度が欲しくなったら **(C) Visscher** に置き換えるのが最有力
+  （同じ刻み制限で反復コストが消え、ノルムも厳密保存）。
+- $g$ を強くして Picard の収束が渋くなったら **(D) Strang 分割**で非線形を厳密化。
+- 参考文献：Visscher, Computers in Physics 5, 596 (1991)／
+  Bao, Jaksch & Markowich, J. Comput. Phys. 187, 318 (2003)／
+  Antoine, Bao & Besse, Comput. Phys. Commun. 184, 2621 (2013)（レビュー）。
+
 ## 7. 環境メモ
 
 - インストール済み: `/usr/lib/openfoam/` に **openfoam2406 / openfoam2506 / openfoam2512** が併存。他に `/opt/openfoam13`（Foundation）。
