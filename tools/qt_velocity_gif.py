@@ -27,7 +27,7 @@ if os.path.exists(_jp):
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from qt_analysis import (read_vtk_fields, madelung_fields, helmholtz,
-                         detect_vortices, bulk_window)
+                         detect_vortices, detect_vortices_f90, bulk_window)
 
 
 def decompose(Re, Im, dx, dy, D, weighted, rho_frac=0.0):
@@ -53,6 +53,8 @@ def main():
                     help="渦検出の密度しきい値（ピーク密度に対する割合）")
     ap.add_argument("--vmax", type=float, default=99.5,
                     help="共通カラーバー上限のパーセンタイル")
+    ap.add_argument("--pseudo-frac", type=float, default=0.03,
+                    help="擬渦度による偽渦除去のしきい値（0=無効）。既定 0.03")
     a = ap.parse_args()
 
     series = glob.glob(os.path.join(a.vtk_dir, "*.vtm.series"))[0]
@@ -69,8 +71,9 @@ def main():
                                 meta["dx"], meta["dy"], a.D, a.weighted,
                                 a.rho_frac)
         rho_min = a.rho_frac * float(rho.max())
-        winding, (npl, nmi, ntot, net) = detect_vortices(
-            f["Psire"], f["Psiim"], rho_min=rho_min)
+        winding, (npl, nmi, ntot, net) = detect_vortices_f90(
+            f["Psire"], f["Psiim"], rho_min=rho_min,
+            pseudo_frac=a.pseudo_frac, dx=meta["dx"], dy=meta["dy"])
         yy, xx = np.where(np.abs(winding) == 1)
         frames.append(dict(mi=mi, mc=mc, t=meta["time"], xs=xs, ys=ys,
                            xv=xs[np.clip(xx, 0, len(xs) - 1)],
