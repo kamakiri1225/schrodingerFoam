@@ -51,6 +51,13 @@ def read_fields(vtm_name):
     pha = ug.GetCellData().GetArray("phase")
     dens = vtk_to_numpy(dens) if dens is not None else None
     pha = vtk_to_numpy(pha) if pha is not None else None
+    if dens is None or pha is None:            # フォールバック: Psire/Psiim から計算
+        re = ug.GetCellData().GetArray("Psire")
+        im = ug.GetCellData().GetArray("Psiim")
+        if re is not None and im is not None:
+            re = vtk_to_numpy(re); im = vtk_to_numpy(im)
+            dens = re * re + im * im
+            pha = np.arctan2(im, re)
     return pts, dens, pha
 
 
