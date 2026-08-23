@@ -106,3 +106,30 @@ volScalarField phase
     mesh,
     dimensionedScalar("zero", dimless, Zero)
 );
+
+// Superfluid ("Madelung") velocity  U = v = (hbar/m) grad(theta) = 2 D grad(theta),
+// computed from the current  j = Psire grad(Psiim) - Psiim grad(Psire)  as
+//     U = 2 D j / max(|Psi|^2, rhoFloor).
+// The floor keeps U finite inside vortex cores (where |Psi|^2 -> 0). Written
+// for ParaView; the energy-spectrum analysis recomputes w = sqrt(rho) v itself.
+volVectorField U
+(
+    IOobject
+    (
+        "U",
+        runTime.timeName(),
+        mesh,
+        IOobject::NO_READ,
+        IOobject::AUTO_WRITE
+    ),
+    mesh,
+    dimensionedVector("zero", dimensionSet(0, 1, -1, 0, 0, 0, 0), Zero)
+);
+
+// density floor for the velocity division (nondimensional density ~ O(1))
+const dimensionedScalar rhoFloor
+(
+    "rhoFloor",
+    magSqrPsi.dimensions(),
+    gpProperties.getOrDefault<scalar>("rhoFloor", 1e-3)
+);

@@ -337,6 +337,11 @@ int main(int argc, char *argv[])
             phase = atan2(Psiim, Psire);
         }
 
+        // superfluid velocity  U = 2 D * (Psire grad Psiim - Psiim grad Psire)
+        //                             / max(|Psi|^2, rhoFloor)
+        U = 2.0*D*(Psire*fvc::grad(Psiim) - Psiim*fvc::grad(Psire))
+          / max(magSqrPsi, rhoFloor);
+
         // convergence stop (mainly for imaginaryTime relaxation)
         if (convTol > 0)
         {
