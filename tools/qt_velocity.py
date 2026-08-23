@@ -22,7 +22,8 @@ if os.path.exists(_jp):
     plt.rcParams["font.family"] = _fm.FontProperties(fname=_jp).get_name()
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from qt_analysis import read_vtk_fields, madelung_fields, helmholtz, detect_vortices
+from qt_analysis import (read_vtk_fields, madelung_fields, helmholtz,
+                         detect_vortices, bulk_window)
 
 
 def main():
@@ -43,6 +44,9 @@ def main():
     rho, (vx, vy), (wx, wy) = madelung_fields(Re, Im, dx, dy, a.D)
     fx, fy = (wx, wy) if a.weighted else (vx, vy)
     label = "w=√ρ·v" if a.weighted else "v"
+    if a.rho_frac > 0.0:                     # トラップ内部だけを残す（外側ハロを除去）
+        W = bulk_window(rho, a.rho_frac)
+        fx, fy = fx * W, fy * W
 
     # Helmholtz 分解
     (Wix, Wiy), (Wcx, Wcy), _ = helmholtz(fx, fy, dx, dy)

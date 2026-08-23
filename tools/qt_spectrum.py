@@ -37,7 +37,7 @@ def main():
     flds, xs, ys, meta = read_vtk_fields(a.vtk_dir, a.index)
     Re, Im = flds["Psire"], flds["Psiim"]
 
-    sp = energy_spectra(Re, Im, meta, D=a.D)
+    sp = energy_spectra(Re, Im, meta, D=a.D, rho_frac=a.rho_frac)
     rho_min = a.rho_frac * float((Re**2 + Im**2).max())
     winding, (npl, nmi, ntot, net) = detect_vortices(Re, Im, rho_min=rho_min)
 

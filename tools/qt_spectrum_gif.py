@@ -34,6 +34,8 @@ def main():
     ap.add_argument("vtk_dir")
     ap.add_argument("out")
     ap.add_argument("--D", type=float, default=0.5)
+    ap.add_argument("--rho-frac", type=float, default=0.0,
+                    help="トラップ内部だけで計算する密度しきい値（ピーク比。トラップ系は 0.3）")
     a = ap.parse_args()
 
     series = glob.glob(os.path.join(a.vtk_dir, "*.vtm.series"))[0]
@@ -43,10 +45,13 @@ def main():
     # 1st pass: 全時刻のスペクトルを計算して共通の軸範囲を決める
     snaps = []
     lo, hi = np.inf, 0.0
+    Ei_sum = None
     for idx in range(nt):
         f, xs, ys, meta = read_vtk_fields(a.vtk_dir, idx)
-        sp = energy_spectra(f["Psire"], f["Psiim"], meta, D=a.D)
+        sp = energy_spectra(f["Psire"], f["Psiim"], meta, D=a.D,
+                            rho_frac=a.rho_frac)
         snaps.append((meta["time"], sp))
+        Ei_sum = sp["Ei"].copy() if Ei_sum is None else Ei_sum + sp["Ei"]
         for key in ("Ei", "Ec"):
             E = sp[key][(sp["k"] > 0) & (sp[key] > 0)]
             if E.size:
@@ -55,6 +60,16 @@ def main():
     k0 = snaps[0][1]["k"]
     kpos = k0[k0 > 0]
     kmin, kmax = kpos.min(), kpos.max()
+
+    # k^-5/3 線の振幅を「一つの理屈」で固定する：
+    # Kolmogorov–Obukhov  E^i(k)=A k^{-5/3}（A=C ε^{2/3}）の A を、
+    # 全時刻平均スペクトル <E^i(k)>_t の慣性領域から一度だけ決める。以後は全フレーム共通。
+    Ei_avg = Ei_sum / len(snaps)
+    k_all = k0
+    band0 = (k_all > 2 * kmin) & (k_all < 0.35 * kmax) & (Ei_avg > 0)
+    kfit = k_all[band0]
+    amp53 = float(np.exp(np.mean(np.log(Ei_avg[band0] * kfit**(5 / 3))))) \
+        if band0.any() else None                       # 幾何平均フィット（固定振幅）
 
     frames_dir = a.out + "_frames"
     os.makedirs(frames_dir, exist_ok=True)
@@ -66,13 +81,10 @@ def main():
                   label=r"$E^i_{kin}(k)$ 非圧縮")
         ax.loglog(k[m], sp["Ec"][m], "-", color="#c0392b", lw=2,
                   label=r"$E^c_{kin}(k)$ 圧縮")
-        band = (k[m] > 2 * kmin) & (k[m] < 0.35 * kmax)
-        if band.any():
-            kref = k[m][band]
-            amp = np.median(sp["Ei"][m][band] * kref**(5 / 3))
-            if np.isfinite(amp) and amp > 0:
-                ax.loglog(kref, amp * kref**(-5 / 3), "k--", lw=1.4,
-                          label=r"$k^{-5/3}$")
+        if amp53 is not None:
+            kref = k[m][(k[m] > 2 * kmin) & (k[m] < 0.35 * kmax)]
+            ax.loglog(kref, amp53 * kref**(-5 / 3), "k--", lw=1.4,
+                      label=r"$k^{-5/3}$（固定）")
         ax.set_xlim(kmin * 0.8, kmax * 1.2)
         ax.set_ylim(lo, hi * 1.5)
         ax.set_xlabel("波数  $k$")

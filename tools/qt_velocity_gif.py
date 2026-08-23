@@ -26,12 +26,16 @@ if os.path.exists(_jp):
     plt.rcParams["font.family"] = _fm.FontProperties(fname=_jp).get_name()
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from qt_analysis import read_vtk_fields, madelung_fields, helmholtz, detect_vortices
+from qt_analysis import (read_vtk_fields, madelung_fields, helmholtz,
+                         detect_vortices, bulk_window)
 
 
-def decompose(Re, Im, dx, dy, D, weighted):
+def decompose(Re, Im, dx, dy, D, weighted, rho_frac=0.0):
     rho, (vx, vy), (wx, wy) = madelung_fields(Re, Im, dx, dy, D)
     fx, fy = (wx, wy) if weighted else (vx, vy)
+    if rho_frac > 0.0:                       # トラップ内部だけを残す
+        W = bulk_window(rho, rho_frac)
+        fx, fy = fx * W, fy * W
     (Wix, Wiy), (Wcx, Wcy), _ = helmholtz(fx, fy, dx, dy)
     mi = np.hypot(np.real(np.fft.ifft2(Wix)), np.real(np.fft.ifft2(Wiy)))
     mc = np.hypot(np.real(np.fft.ifft2(Wcx)), np.real(np.fft.ifft2(Wcy)))
@@ -62,7 +66,8 @@ def main():
     for idx in range(nt):
         f, xs, ys, meta = read_vtk_fields(a.vtk_dir, idx)
         rho, mi, mc = decompose(f["Psire"], f["Psiim"],
-                                meta["dx"], meta["dy"], a.D, a.weighted)
+                                meta["dx"], meta["dy"], a.D, a.weighted,
+                                a.rho_frac)
         rho_min = a.rho_frac * float(rho.max())
         winding, (npl, nmi, ntot, net) = detect_vortices(
             f["Psire"], f["Psiim"], rho_min=rho_min)

@@ -133,10 +133,31 @@ def kinetic_spectrum(Wx, Wy, meta):
     return kc, Ek, Ekin
 
 
-def energy_spectra(a, b, meta, D=0.5, rho_floor=1e-6):
-    """一時刻の (E^i(k), E^c(k)) と積分エネルギーをまとめて返す."""
+def bulk_window(rho, frac, soft=0.5):
+    """トラップ内部（凝縮体があるところ）だけを残す滑らかな窓 W(x) を返す.
+
+    frac : ピーク密度に対する割合。rho > frac*peak を 1、外側を tanh で滑らかに 0
+           にする（ハードエッジによるスペクトル漏れを避ける）。frac<=0 なら全域 1。
+    トラップ外の低密度ハロは位相がノイズで偽の速度・偽のスペクトルを生むため、
+    これを掛けてから Helmholtz 分解・スペクトルを取る。
+    """
+    if frac <= 0:
+        return np.ones_like(rho)
+    thr = frac * float(np.nanmax(rho))
+    return 0.5 * (1.0 + np.tanh((rho - thr) / (soft * thr + 1e-30)))
+
+
+def energy_spectra(a, b, meta, D=0.5, rho_floor=1e-6, rho_frac=0.0):
+    """一時刻の (E^i(k), E^c(k)) と積分エネルギーをまとめて返す.
+
+    rho_frac>0 のときはトラップ内部だけを残す窓 W を w に掛けてから分解する
+    （トラップ系で外側ハロの偽スペクトルを除く）。一様系は 0 のままでよい。
+    """
     dx, dy = meta["dx"], meta["dy"]
-    _, _, (wx, wy) = madelung_fields(a, b, dx, dy, D, rho_floor)
+    rho, _, (wx, wy) = madelung_fields(a, b, dx, dy, D, rho_floor)
+    if rho_frac > 0.0:
+        W = bulk_window(rho, rho_frac)
+        wx, wy = wx * W, wy * W
     (Wix, Wiy), (Wcx, Wcy), _ = helmholtz(wx, wy, dx, dy)
     k, Ei, Ei_tot = kinetic_spectrum(Wix, Wiy, meta)
     _, Ec, Ec_tot = kinetic_spectrum(Wcx, Wcy, meta)
@@ -182,5 +203,35 @@ def detect_vortices(a, b, rho_min=0.0):
     n_plus = int(np.sum(winding == 1) + np.sum(winding > 1))
     n_minus = int(np.sum(winding == -1) + np.sum(winding < -1))
     n_total = int(np.sum(np.abs(winding)))
+    net = int(np.sum(winding))
+    return winding, (n_plus, n_minus, n_total, net)
+
+
+def detect_vortices_f90(a, b, rho_min=0.0):
+    """soliton_hist_ensamble.f90 と同一式の忠実移植（検証用）.
+
+    各プラケットで  Im( Σ log(conj(f_A)·f_B) )  を4辺足し，f90 と同じく /6 して
+    整数化（切り捨て）する： uzudo = dint( Σ Im(log(...)) / 6 )。
+      +2π → dint(1.047)=+1,  -2π → -1。
+    位相差は cdlog の主値（(-π,π]）＝ np.angle(conj(f_A)*f_B) と同一。
+    """
+    f = a + 1j * b
+    fxp = np.roll(f, -1, 1)                  # (y,   x+1)
+    fyp = np.roll(f, -1, 0)                  # (y+1, x)
+    fcc = np.roll(fyp, -1, 1)                # (y+1, x+1)
+    s = (np.angle(np.conj(f) * fxp)         # A -> B
+         + np.angle(np.conj(fxp) * fcc)     # B -> C
+         + np.angle(np.conj(fcc) * fyp)     # C -> D
+         + np.angle(np.conj(fyp) * f))      # D -> A
+    winding = np.trunc(s / 6.0).astype(int)  # f90: dint(.../6)
+    if rho_min > 0.0:
+        rho = a * a + b * b
+        rmax = np.maximum.reduce([rho, np.roll(rho, -1, 1),
+                                  np.roll(np.roll(rho, -1, 1), -1, 0),
+                                  np.roll(rho, -1, 0)])
+        winding = np.where(rmax > rho_min, winding, 0)
+    n_plus = int(np.sum(winding >= 1))
+    n_minus = int(np.sum(winding <= -1))
+    n_total = n_plus + n_minus
     net = int(np.sum(winding))
     return winding, (n_plus, n_minus, n_total, net)

@@ -33,6 +33,8 @@ def main():
     ap.add_argument("--n", type=int, default=7, help="重ねる時刻数")
     ap.add_argument("--comp", choices=["i", "c"], default="i")
     ap.add_argument("--D", type=float, default=0.5)
+    ap.add_argument("--rho-frac", type=float, default=0.0,
+                    help="トラップ内部だけで計算する密度しきい値（ピーク比。トラップ系は 0.3）")
     a = ap.parse_args()
 
     series = glob.glob(os.path.join(a.vtk_dir, "*.vtm.series"))[0]
@@ -47,7 +49,8 @@ def main():
     kkeep = None
     for j, idx in enumerate(idxs):
         f, xs, ys, meta = read_vtk_fields(a.vtk_dir, int(idx))
-        sp = energy_spectra(f["Psire"], f["Psiim"], meta, D=a.D)
+        sp = energy_spectra(f["Psire"], f["Psiim"], meta, D=a.D,
+                            rho_frac=a.rho_frac)
         k, E = sp["k"], sp[key]
         m = (k > 0) & (E > 0)
         c = cmap(j / max(len(idxs) - 1, 1))
