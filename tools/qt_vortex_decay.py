@@ -35,6 +35,8 @@ def main():
     ap.add_argument("out", nargs="?", default=None)
     ap.add_argument("--rho-frac", type=float, default=0.0,
                     help="渦検出の密度しきい値（ピーク密度に対する割合。トラップ系は 0.3）")
+    ap.add_argument("--pseudo-frac", type=float, default=0.03,
+                    help="擬渦度による偽渦除去のしきい値（0=無効）。既定 0.03")
     ap.add_argument("--ref", type=float, default=1.0,
                     help="参照べき N_v ∝ t^{-ref}（両対数のときだけ描く）")
     ap.add_argument("--semilog", action="store_true",
@@ -45,38 +47,50 @@ def main():
     files = json.load(open(series))["files"]
     nt = len(files)
 
-    ts, nv = [], []
+    from qt_analysis import detect_vortices_f90
+    ts, nv, nvc = [], [], []
     for idx in range(nt):
         f, xs, ys, meta = read_vtk_fields(a.vtk_dir, idx)
-        rho = f["Psire"]**2 + f["Psiim"]**2
+        Re, Im = f["Psire"], f["Psiim"]
+        rho = Re**2 + Im**2
         rho_min = a.rho_frac * float(rho.max())
-        _, (npl, nmi, ntot, net) = detect_vortices(
-            f["Psire"], f["Psiim"], rho_min=rho_min)
-        ts.append(float(meta["time"])); nv.append(npl + nmi)
-        print(f"t={meta['time']:>8}  N_v={npl+nmi:5d}  (+{npl}/-{nmi})")
+        dx, dy = meta["dx"], meta["dy"]
+        _, (p0, m0, t0, n0) = detect_vortices_f90(Re, Im, rho_min=rho_min)
+        _, (p1, m1, t1, n1) = detect_vortices_f90(
+            Re, Im, rho_min=rho_min, pseudo_frac=a.pseudo_frac, dx=dx, dy=dy)
+        ts.append(float(meta["time"])); nv.append(p0 + m0); nvc.append(p1 + m1)
+        print(f"t={meta['time']:>8}  raw N_v={p0+m0:5d}   cleaned={p1+m1:5d}")
 
-    ts = np.array(ts); nv = np.array(nv, float)
+    ts = np.array(ts); nv = np.array(nv, float); nvc = np.array(nvc, float)
 
     out = a.out or "graph/vortex_decay.png"
     os.makedirs(os.path.dirname(out) or ".", exist_ok=True)
     csv = os.path.splitext(out)[0] + ".csv"
-    np.savetxt(csv, np.column_stack([ts, nv]), fmt="%.6g",
-               header="time  N_vortex", comments="")
+    np.savetxt(csv, np.column_stack([ts, nv, nvc]), fmt="%.6g",
+               header="time  N_vortex_raw  N_vortex_cleaned", comments="")
 
     fig, ax = plt.subplots(figsize=(7.2, 5.4))
     pos = nv > 0
     if a.semilog:
-        ax.semilogy(ts[pos], nv[pos], "o-", color="#1f6feb", lw=1.8, ms=5)
+        ax.semilogy(ts[pos], nv[pos], "o-", color="#aaaaaa", lw=1.5, ms=4,
+                    label="raw")
+        pc = nvc > 0
+        ax.semilogy(ts[pc], nvc[pc], "o-", color="#1f6feb", lw=1.8, ms=5,
+                    label="偽渦除去後")
+        ax.legend()
     else:
         tp = ts > 0
-        ax.loglog(ts[pos & tp], nv[pos & tp], "o-",
-                  color="#1f6feb", lw=1.8, ms=5, label=r"$N_v(t)$")
-        # 参照べき t^{-ref}（減衰域にざっくり合わせる）
-        tt = ts[pos & tp]
+        ax.loglog(ts[pos & tp], nv[pos & tp], "o-", color="#aaaaaa",
+                  lw=1.5, ms=4, label=r"raw $N_v(t)$")
+        pc = (nvc > 0) & tp
+        ax.loglog(ts[pc], nvc[pc], "o-", color="#1f6feb", lw=1.8, ms=5,
+                  label=r"偽渦除去後 $N_v(t)$")
+        # 参照べき t^{-ref}（除去後の減衰域に合わせる）
+        tt = ts[pc]
         if tt.size > 3:
             band = tt >= tt[len(tt) // 3]
             tr = tt[band]
-            amp = np.median(nv[pos & tp][band] * tr**a.ref)
+            amp = np.median(nvc[pc][band] * tr**a.ref)
             ax.loglog(tr, amp * tr**(-a.ref), "k--", lw=1.5,
                       label=rf"$t^{{-{a.ref:g}}}$")
         ax.legend()

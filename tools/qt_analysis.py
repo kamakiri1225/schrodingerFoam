@@ -207,13 +207,27 @@ def detect_vortices(a, b, rho_min=0.0):
     return winding, (n_plus, n_minus, n_total, net)
 
 
-def detect_vortices_f90(a, b, rho_min=0.0):
-    """soliton_hist_ensamble.f90 と同一式の忠実移植（検証用）.
+def pseudovorticity(a, b, dx=1.0, dy=1.0):
+    """擬渦度 ω_ps = ∂xRe·∂yIm − ∂yRe·∂xIm = (∇Re × ∇Im)_z.
+
+    本物の量子渦は ψ=0 の孤立点で ∇Re と ∇Im が直交して交わり |ω_ps| が大きい。
+    一方ダークソリトンの節線は Im≈0（∇Im がノイズ）なので |ω_ps| は小さい。
+    → |ω_ps| のしきい値で「本物の渦」と「節線上の偽欠陥」を物理的に分離できる。
+    """
+    return _ddx(a, dx) * _ddy(b, dy) - _ddy(a, dy) * _ddx(b, dx)
+
+
+def detect_vortices_f90(a, b, rho_min=0.0, pseudo_frac=0.0, dx=1.0, dy=1.0):
+    """soliton_hist_ensamble.f90 と同一式の忠実移植（＋任意の偽渦除去）.
 
     各プラケットで  Im( Σ log(conj(f_A)·f_B) )  を4辺足し，f90 と同じく /6 して
     整数化（切り捨て）する： uzudo = dint( Σ Im(log(...)) / 6 )。
       +2π → dint(1.047)=+1,  -2π → -1。
     位相差は cdlog の主値（(-π,π]）＝ np.angle(conj(f_A)*f_B) と同一。
+
+    pseudo_frac>0 : |ω_ps| がバルクの n0/ξ² の pseudo_frac 倍未満のプラケットを
+        除外し，ダークソリトン節線上のノイズ由来の偽渦を消す（0.02〜0.05 が目安）。
+        この判定に格子間隔 dx,dy が要る。
     """
     f = a + 1j * b
     fxp = np.roll(f, -1, 1)                  # (y,   x+1)
@@ -224,12 +238,22 @@ def detect_vortices_f90(a, b, rho_min=0.0):
          + np.angle(np.conj(fcc) * fyp)     # C -> D
          + np.angle(np.conj(fyp) * f))      # D -> A
     winding = np.trunc(s / 6.0).astype(int)  # f90: dint(.../6)
+    rho = a * a + b * b
     if rho_min > 0.0:
-        rho = a * a + b * b
         rmax = np.maximum.reduce([rho, np.roll(rho, -1, 1),
                                   np.roll(np.roll(rho, -1, 1), -1, 0),
                                   np.roll(rho, -1, 0)])
         winding = np.where(rmax > rho_min, winding, 0)
+    if pseudo_frac > 0.0:
+        ops = np.abs(pseudovorticity(a, b, dx, dy))
+        bulk = rho[rho > 0.3 * float(rho.max())]
+        n0 = float(np.median(bulk)) if bulk.size else float(rho.max())
+        xi2 = 0.5 / max(n0, 1e-12)           # ξ² = D/(g n0), D=0.5,g=1
+        thr = pseudo_frac * n0 / xi2
+        omax = np.maximum.reduce([ops, np.roll(ops, -1, 1),
+                                  np.roll(np.roll(ops, -1, 1), -1, 0),
+                                  np.roll(ops, -1, 0)])
+        winding = np.where(omax > thr, winding, 0)
     n_plus = int(np.sum(winding >= 1))
     n_minus = int(np.sum(winding <= -1))
     n_total = n_plus + n_minus
