@@ -26,6 +26,7 @@ from PIL import Image
 vtk_dir = sys.argv[1]
 out_gif = sys.argv[2]
 tag = sys.argv[3] if len(sys.argv) > 3 else ""
+rho_vmax = float(sys.argv[4]) if len(sys.argv) > 4 else 1.3   # 密度カラーバー上限
 
 frames_dir = out_gif + "_frames"          # matched by .gitignore (figures/*/*frames/)
 os.makedirs(frames_dir, exist_ok=True)
@@ -75,7 +76,7 @@ for k, e in enumerate(entries):
 
     fig, (axd, axp) = plt.subplots(1, 2, figsize=(11, 5.0))
     imd = axd.imshow(dgrid, origin="lower", extent=extent, cmap="jet",
-                     vmin=0.0, vmax=1.3, interpolation="bilinear")
+                     vmin=0.0, vmax=rho_vmax, interpolation="bilinear")
     axd.set_title(r"density  $|\psi|^2$"); axd.set_xlabel("x"); axd.set_ylabel("y")
     fig.colorbar(imd, ax=axd, shrink=0.85)
 
