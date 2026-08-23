@@ -146,8 +146,11 @@ def energy_spectra(a, b, meta, D=0.5, rho_floor=1e-6):
 # ----------------------------------------------------------------------------
 # 4. 量子渦点の検出（位相の巻き数 → ±1）
 # ----------------------------------------------------------------------------
-def detect_vortices(a, b):
+def detect_vortices(a, b, rho_min=0.0):
     """各プラケットの位相巻き数を返す（+1=渦, -1=反渦）.  ω=∇×v の量子化版.
+
+    rho_min : この密度以下のプラケットは無視（トラップ外の低密度ハロで位相が
+              ノイズになり偽の巻きを数えるのを防ぐ）。一様系では 0 でよい。
 
     return : charge (ny, nx) の整数格子（プラケット左下セル基準）,
              (n_plus, n_minus, n_total, net)
@@ -168,6 +171,14 @@ def detect_vortices(a, b):
     d3 = wrap(typ - tcc)                     # C -> D  (-x)
     d4 = wrap(t - typ)                       # D -> A  (-y)
     winding = np.round((d1 + d2 + d3 + d4) / (2 * np.pi)).astype(int)
+    if rho_min > 0.0:
+        # 渦芯そのものは密度0なので、プラケットの「最大」密度で判定する
+        # （ディスク内の渦は周囲が bulk 密度、トラップ外ハロは全て ~0）。
+        rho = a * a + b * b
+        rmax = np.maximum.reduce([rho, np.roll(rho, -1, 1),
+                                  np.roll(np.roll(rho, -1, 1), -1, 0),
+                                  np.roll(rho, -1, 0)])
+        winding = np.where(rmax > rho_min, winding, 0)
     n_plus = int(np.sum(winding == 1) + np.sum(winding > 1))
     n_minus = int(np.sum(winding == -1) + np.sum(winding < -1))
     n_total = int(np.sum(np.abs(winding)))

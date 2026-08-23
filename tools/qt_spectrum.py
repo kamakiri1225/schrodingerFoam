@@ -30,13 +30,16 @@ def main():
     ap.add_argument("out", nargs="?", default=None)
     ap.add_argument("--index", type=int, default=None)
     ap.add_argument("--D", type=float, default=0.5)
+    ap.add_argument("--rho-frac", type=float, default=0.0,
+                    help="渦検出の密度しきい値（ピーク密度に対する割合。トラップ系は 0.3 など）")
     a = ap.parse_args()
 
     flds, xs, ys, meta = read_vtk_fields(a.vtk_dir, a.index)
     Re, Im = flds["Psire"], flds["Psiim"]
 
     sp = energy_spectra(Re, Im, meta, D=a.D)
-    winding, (npl, nmi, ntot, net) = detect_vortices(Re, Im)
+    rho_min = a.rho_frac * float((Re**2 + Im**2).max())
+    winding, (npl, nmi, ntot, net) = detect_vortices(Re, Im, rho_min=rho_min)
 
     print(f"time            = {meta['time']}")
     print(f"grid            = {meta['nx']} x {meta['ny']}  (dx={meta['dx']})")
