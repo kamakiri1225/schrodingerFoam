@@ -88,6 +88,16 @@ int main(int argc, char *argv[])
     const scalar convTol =
         gpProperties.getOrDefault<scalar>("convergenceTol", 0.0);
 
+    // Optional (imaginaryTime): hold the PHASE fixed while relaxing only the
+    // amplitude. Free imaginary time flows to the uniform ground state and
+    // ERASES dark solitons / vortices (they are excited states). By imprinting
+    // the desired phase theta0 and resetting arg(Psi) = theta0 after every step
+    // we relax the DENSITY to the clean stationary profile for that phase
+    // (sound-free multi-soliton / vortex-lattice state). Use it to prepare a
+    // clean initial condition, then evolve in realTime.
+    const bool fixPhase =
+        gpProperties.getOrDefault<bool>("fixPhase", false);
+
     // Optional: switch the external potential OFF at t >= releaseTime
     // (e.g. releasing a trapped cloud into free expansion). Default: never.
     const scalar releaseTime =
@@ -118,6 +128,9 @@ int main(int argc, char *argv[])
     // Working copy holding the previous half-step imaginary part v^{n-1/2}
     // (only used by the realTimeVisscher scheme; NO_WRITE).
     volScalarField PsiimPrev("PsiimPrev", Psiim);
+
+    // Imprinted phase to hold fixed during phase-constrained imaginary time.
+    const volScalarField theta0("theta0", atan2(Psiim, Psire));
 
     // One-time initialisation for the Visscher staggered leap-frog:
     // shift the imaginary part back by half a step, v^{1/2} = v^0 - (dt/2) H u^0,
@@ -198,6 +211,17 @@ int main(int argc, char *argv[])
                     Foam::sqrt(targetNorm/max(curNorm.value(), SMALL));
                 Psire *= factor;
                 Psiim *= factor;
+            }
+
+            // hold the imprinted phase fixed: Psi <- |Psi| e^{i theta0}
+            // (relaxes only the amplitude -> clean soliton/vortex density)
+            if (fixPhase)
+            {
+                const volScalarField mag(sqrt(sqr(Psire) + sqr(Psiim)));
+                Psire = mag*cos(theta0);
+                Psiim = mag*sin(theta0);
+                Psire.correctBoundaryConditions();
+                Psiim.correctBoundaryConditions();
             }
 
             Info<< "  mu = " << mu.value()
