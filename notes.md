@@ -673,6 +673,45 @@ $\Delta t\propto\Delta x^2$ の制限を根本的に外すには (u,v) 連成の
   Bao, Jaksch & Markowich, J. Comput. Phys. 187, 318 (2003)／
   Antoine, Bao & Besse, Comput. Phys. Commun. 184, 2621 (2013)（レビュー）。
 
+## 6.18 realTimeVisscher モード追加（実装済み・2026-08-23）
+
+6.17(C) の Visscher staggered leap-frog を、既存の realTime / imaginaryTime を
+無改造のまま**追加モード**として実装した（`mode realTimeVisscher`）。
+
+### アルゴリズム
+
+Re を整数ステップ、Im を半整数ステップに置く：
+
+- 初期化（ループ前に一度）：`Psiim = Psiim - 0.5*dt*H*Psire`（$v^0\to v^{1/2}$）
+- 各ステップ：
+  1. `Psire = Psire + dt*H*Psiim`（$u^{n+1}=u^n+\Delta t\,Hv^{n+1/2}$）
+  2. `Psiim = Psiim - dt*H*Psire`（$v^{n+3/2}=v^{n+1/2}-\Delta t\,Hu^{n+1}$）
+- `H = -D*fvc::laplacian(・) + W*(・)`、`W = Vext + g|Psi|^2 - muEff`。
+- muShift / dynamicMu / releaseTime は realTime と共通で使える。
+- 反復なし。$W$（非線形項含む）は毎回いちばん新しい場から明示評価。
+
+出力の密度・位相は staggered を同期して計算：
+`magSqrPsi = sqr(Psire) + Psiim*PsiimPrev`（＝ $u^2+v_{n+1/2}v_{n-1/2}$、Visscher保存量）、
+`phase = atan2(0.5*(Psiim+PsiimPrev), Psire)`。
+
+### 検証（渦対 03_1、muShift=1、$\Delta t=0.005$、$t=0\to3$＝600ステップ）
+
+| | 初期ノルム | 最終ノルム | ドリフト |
+|---|---|---|---|
+| realTime（CN+Picard, nCorr=4） | 253.8245 | 253.8245 | ≈0（ほぼ厳密） |
+| realTimeVisscher | 253.8243 | 253.7457 | −0.031%（600step） |
+
+- 両者の**初期ノルムが一致** → 実装が正しいことの確認。
+- Visscher は明示スキームなので非線形項由来の $O(\Delta t^2)$ 微小ドリフトがあるが、
+  600ステップで 0.03% と十分小さく、発散なし。
+- **コスト**：Visscher は H適用が各場1回/step（計2回）。CN は nCorrectors=4 で
+  ラプラシアン約8回/step → **Visscher は約1/4**。速度が欲しいときの置き換え候補。
+
+### 使い方
+
+`constant/gpProperties` で `mode realTimeVisscher;`（他は realTime と同じ設定でよい）。
+安定条件 $\Delta t\lesssim 2/\lVert H\rVert$ は realTime と同じ。
+
 ## 7. 環境メモ
 
 - インストール済み: `/usr/lib/openfoam/` に **openfoam2406 / openfoam2506 / openfoam2512** が併存。他に `/opt/openfoam13`（Foundation）。

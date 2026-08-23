@@ -24,6 +24,15 @@ Description
                         laplacianFoam modification diverged; Crank-Nicolson
                         has |amplification| = 1 for the linear part.
 
+      * realTimeVisscher : the SAME real-time evolution, but an explicit
+                        staggered leap-frog (Visscher, Computers in Physics 5,
+                        596, 1991). Re is stored at integer steps, Im at half-
+                        integer steps. No Picard iteration (about 1/nCorrectors
+                        the cost of realTime) and it EXACTLY conserves the
+                        discrete norm  u^2 + v_{n+1/2} v_{n-1/2}. Stable for
+                        dt <= 2/||H|| (same restriction as realTime). Add-on
+                        alternative; realTime is left unchanged.
+
       * imaginaryTime : gradient flow  d(Psi)/dtau = -(H - mu) Psi , solved
                         fully implicitly (unconditionally stable, large dtau).
                         Projects an arbitrary start onto the lowest-energy
@@ -105,6 +114,39 @@ int main(int argc, char *argv[])
     );
 
     Info<< "Solver mode: " << mode << nl << endl;
+
+    // Working copy holding the previous half-step imaginary part v^{n-1/2}
+    // (only used by the realTimeVisscher scheme; NO_WRITE).
+    volScalarField PsiimPrev("PsiimPrev", Psiim);
+
+    // One-time initialisation for the Visscher staggered leap-frog:
+    // shift the imaginary part back by half a step, v^{1/2} = v^0 - (dt/2) H u^0,
+    // so that Re lives at integer times and Im at half-integer times.
+    if (mode == "realTimeVisscher")
+    {
+        const dimensionedScalar dt0 = runTime.deltaT();
+        const scalar trapOn0 = (runTime.value() < releaseTime) ? 1.0 : 0.0;
+        const volScalarField Vnow0(trapOn0*Vext);
+
+        dimensionedScalar muEff0("muEff0", dimensionSet(0, 0, -1, 0, 0, 0, 0), 0.0);
+        if (dynamicMu)
+        {
+            const volScalarField Wm(Vnow0 + g*(sqr(Psire) + sqr(Psiim)));
+            const volScalarField Hr(-D*fvc::laplacian(Psire) + Wm*Psire);
+            const volScalarField Hi(-D*fvc::laplacian(Psiim) + Wm*Psiim);
+            muEff0 = fvc::domainIntegrate(Psire*Hr + Psiim*Hi)
+                   / fvc::domainIntegrate(sqr(Psire) + sqr(Psiim));
+        }
+        else
+        {
+            muEff0 = muShift;
+        }
+        const volScalarField W0k(Vnow0 + g*(sqr(Psire) + sqr(Psiim)) - muEff0);
+        const volScalarField Hu0k(-D*fvc::laplacian(Psire) + W0k*Psire);
+        Psiim = Psiim - 0.5*dt0*Hu0k;    // v^0 -> v^{1/2}
+        Psiim.correctBoundaryConditions();
+        Info<< "Visscher: staggered Im by -dt/2 (v^{1/2})\n" << endl;
+    }
 
     // ------------------------------------------------------------------- //
     Info<< "\nStarting time loop\n" << endl;
@@ -225,17 +267,75 @@ int main(int argc, char *argv[])
                 << ",  muShift = " << muEff.value()
                 << endl;
         }
+        else if (mode == "realTimeVisscher")
+        {
+            // Explicit staggered leap-frog (Visscher 1991). Re at integer,
+            // Im at half-integer steps:
+            //   u^{n+1}   = u^n       + dt * H v^{n+1/2}
+            //   v^{n+3/2} = v^{n+1/2} - dt * H u^{n+1}
+            // No Picard iteration; the potential W (incl. g|Psi|^2) is taken
+            // explicitly from the freshest available fields.
+            const dimensionedScalar dt = runTime.deltaT();
+
+            // chemical potential to subtract (frame co-rotating with e^{-i mu t})
+            dimensionedScalar muEff("muEff", dimensionSet(0, 0, -1, 0, 0, 0, 0), 0.0);
+            if (dynamicMu)
+            {
+                const volScalarField Wm(Vnow + g*(sqr(Psire) + sqr(Psiim)));
+                const volScalarField Hr(-D*fvc::laplacian(Psire) + Wm*Psire);
+                const volScalarField Hi(-D*fvc::laplacian(Psiim) + Wm*Psiim);
+                muEff = fvc::domainIntegrate(Psire*Hr + Psiim*Hi)
+                      / fvc::domainIntegrate(sqr(Psire) + sqr(Psiim));
+            }
+            else
+            {
+                muEff = muShift;
+            }
+
+            PsiimPrev = Psiim;              // v^{n+1/2}
+
+            // step 1:  u^{n+1} = u^n + dt * H v^{n+1/2}
+            {
+                const volScalarField W(Vnow + g*(sqr(Psire) + sqr(Psiim)) - muEff);
+                const volScalarField Hv(-D*fvc::laplacian(Psiim) + W*Psiim);
+                Psire = Psire + dt*Hv;
+                Psire.correctBoundaryConditions();
+            }
+            // step 2:  v^{n+3/2} = v^{n+1/2} - dt * H u^{n+1}
+            {
+                const volScalarField W(Vnow + g*(sqr(Psire) + sqr(Psiim)) - muEff);
+                const volScalarField Hu(-D*fvc::laplacian(Psire) + W*Psire);
+                Psiim = Psiim - dt*Hu;
+                Psiim.correctBoundaryConditions();
+            }
+
+            Info<< "  norm = "
+                << fvc::domainIntegrate(sqr(Psire) + Psiim*PsiimPrev).value()
+                << ",  muShift = " << muEff.value()
+                << endl;
+        }
         else
         {
             FatalErrorInFunction
                 << "Unknown mode " << mode
-                << " (use realTime or imaginaryTime)"
+                << " (use realTime, realTimeVisscher or imaginaryTime)"
                 << exit(FatalError);
         }
 
         // derived fields for post-processing
-        magSqrPsi = sqr(Psire) + sqr(Psiim);
-        phase = atan2(Psiim, Psire);
+        if (mode == "realTimeVisscher")
+        {
+            // integer-time density/phase from the staggered fields:
+            //   |Psi|^2 = u^2 + v_{n+1/2} v_{n-1/2}   (Visscher conserved density)
+            //   Im at integer time ~ (v_{n+1/2} + v_{n-1/2})/2
+            magSqrPsi = sqr(Psire) + Psiim*PsiimPrev;
+            phase = atan2(0.5*(Psiim + PsiimPrev), Psire);
+        }
+        else
+        {
+            magSqrPsi = sqr(Psire) + sqr(Psiim);
+            phase = atan2(Psiim, Psire);
+        }
 
         // convergence stop (mainly for imaginaryTime relaxation)
         if (convTol > 0)
