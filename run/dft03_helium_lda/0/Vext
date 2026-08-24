@@ -1,0 +1,32 @@
+FoamFile { version 2.0; format ascii; class volScalarField; object Vext; }
+dimensions      [0 0 -1 0 0 0 0];
+internalField   #codeStream
+{
+    codeInclude #{ #include "fvCFD.H" #};
+    codeOptions #{ -I$(LIB_SRC)/finiteVolume/lnInclude -I$(LIB_SRC)/meshTools/lnInclude #};
+    codeLibs    #{ -lfiniteVolume -lmeshTools #};
+    code
+    #{
+        const IOdictionary& d = static_cast<const IOdictionary&>(dict);
+        const fvMesh& mesh = refCast<const fvMesh>(d.db());
+        // Soft Coulomb: V = -Z / sqrt(r^2 + a^2)  (a avoids the -Z/r singularity)
+        const scalar Z = 2.0;
+        const scalar a = 0.4;
+        scalarField V(mesh.nCells());
+        forAll(V, i)
+        {
+            const scalar x = mesh.C()[i].x();
+            const scalar y = mesh.C()[i].y();
+            const scalar z = mesh.C()[i].z();
+            V[i] = -Z/Foam::sqrt(x*x + y*y + z*z + a*a);
+        }
+        V.writeEntry("", os);
+    #};
+};
+boundaryField
+{
+    outer
+    {
+        type            zeroGradient;
+    }
+}

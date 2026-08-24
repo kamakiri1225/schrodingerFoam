@@ -1,0 +1,24 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      dftProperties;
+}
+
+// Kinetic prefactor 1/2 (atomic units)
+D               0.5;
+
+// Occupation of the orbital (H: 1 electron)
+occupation      2.0;
+
+// M1: bare nucleus only
+hartree         true;
+
+xc              slater;
+
+// Stop when the orbital energy stops changing
+convergenceTol  1e-8;
+
+// int |psi|^2 dV = 1
+targetNorm      1.0;
