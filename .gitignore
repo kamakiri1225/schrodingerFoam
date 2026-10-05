@@ -25,6 +25,7 @@ schrodingerFoam/lnInclude/
 # ---- heavy reference material (downloadable elsewhere) ----
 docs/*
 !docs/research_plan_2D_quantum_turbulence_free_expansion.md
+!docs/fvm_merits_demerits.md
 # --- slide deck for GitHub Pages (keep tracked) ---
 !docs/slides_schrodingerFoam.html
 !docs/*.png
