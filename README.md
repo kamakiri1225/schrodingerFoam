@@ -1,7 +1,10 @@
 # schrodingerFoam — Gross–Pitaevskii solver for OpenFOAM (v2512)
 
-📊 **発表スライド（ブラウザで閲覧）**：
-**<https://kamakiri1225.github.io/schrodingerFoam/docs/slides_schrodingerFoam.html>**
+🎤 **学会発表用スライド（オープンCAEシンポジウム・15分発表／ブラウザで閲覧）**：
+**<https://kamakiri1225.github.io/schrodingerFoam/slides/opencae2026/>**
+
+📊 発表スライド（以前の版）：
+<https://kamakiri1225.github.io/schrodingerFoam/docs/slides_schrodingerFoam.html>
 
 OpenFOAM をカスタマイズして、**Gross–Pitaevskii（非線形シュレーディンガー）方程式**
 $i\,\partial_t\psi = -D\nabla^2\psi + (V_\mathrm{ext} + g|\psi|^2)\psi$
