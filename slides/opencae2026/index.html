@@ -15,6 +15,9 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 #bar{position:fixed;left:0;right:0;bottom:0;height:40px;display:flex;align-items:center;justify-content:center;gap:16px;color:#9AA6BA;font-size:14px;background:rgba(11,16,32,.85)}
 #bar button{background:#1f2a44;color:#E6EBF2;border:1px solid #3a4766;border-radius:6px;padding:4px 14px;cursor:pointer;font-size:14px}
 #notes{position:fixed;left:0;right:0;bottom:40px;max-height:30%;overflow:auto;background:#F7F6F1;color:#14213D;padding:12px 20px;font-size:16px;line-height:1.6;display:none;border-top:3px solid #E8552D}
+.animwrap{position:relative}
+.animbtn{position:absolute;right:14px;top:14px;z-index:5;font-family:'Noto Sans JP',Arial,sans-serif;font-size:24px;font-weight:700;padding:8px 20px;border-radius:999px;border:2px solid #C2410C;background:#C2410C;color:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.animbtn.on{background:#fff;color:#C2410C}
 </style></head><body>
 <div id="stage">
 <section class="slide" id="cover" data-transition="fade" style="background:#14213D;color:#F7F6F1;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:center;gap:40px">
@@ -167,7 +170,7 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 <h2 style="font-size:56px;font-weight:700;line-height:1.2">古典的には越えられない障壁を、波束の一部が透過する</h2>
 <p style="font-size:28px;line-height:1.5">幅 a = 0.8、高さ V₀ = 2 の矩形障壁に、ガウス波束（x₀ = −15、σ = 2、k₀ = 1.5）を入射。運動エネルギー E = 1.125 &lt; V₀</p>
 <div style="background:#FFFFFF;border:2px solid #D9DEE7;border-radius:16px;padding:16px;display:flex;justify-content:center">
-<img src="img/fig_tunneling_directions.png" alt="量子トンネル効果での存在確率密度の時間変化。入射波束が障壁で反射と透過に分かれる" style="width:1600px;height:443px;object-fit:contain">
+<img data-anim="img/anim_tunneling.gif" src="img/fig_tunneling_directions.png" alt="量子トンネル効果での存在確率密度の時間変化。入射波束が障壁で反射と透過に分かれる" style="width:1600px;height:443px;object-fit:contain">
 </div>
 <div style="display:flex;gap:24px">
 <p style="flex:1;font-size:32px;font-weight:700;background:#14213D;color:#F7F6F1;border-radius:12px;padding:20px 28px">透過率（t = 22）：計算 0.380</p>
@@ -183,7 +186,7 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 <h2 style="font-size:56px;font-weight:700;line-height:1.2">コヒーレント状態は、形を保ったまま底を中心に往復する</h2>
 <p style="font-size:28px;line-height:1.5">V(x) = ½ ω² x²（ω = 1）。基底状態のガウス関数を x₀ = 4 だけずらして初期値に。</p>
 <div style="background:#FFFFFF;border:2px solid #D9DEE7;border-radius:16px;padding:16px;display:flex;justify-content:center">
-<img src="img/html_harmonic.png" alt="調和ポテンシャル中のコヒーレント状態。波束が形を保って往復する" style="width:1500px;height:487px;object-fit:contain">
+<img data-anim="img/anim_harmonic.gif" src="img/html_harmonic.png" alt="調和ポテンシャル中のコヒーレント状態。波束が形を保って往復する" style="width:1500px;height:487px;object-fit:contain">
 </div>
 <p style="font-size:28px;line-height:1.5;color:#4A5568">安定なつり合い点のまわりをテイラー展開すると、なめらかなポテンシャルは放物線型（ω² = V″(xₑ)）で近似できる。</p>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6B7486">12 / 16</p>
@@ -195,7 +198,7 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 <p style="font-size:28px;font-weight:700;color:#C2410C">例題 3　トラップの開放（2 次元）</p>
 <h2 style="font-size:52px;font-weight:700;line-height:1.2">量子の雲は、縦横比が反転する（不確定性原理）</h2>
 <div style="display:flex;gap:32px;align-items:center">
-<div style="background:#FFFFFF;border:2px solid #D9DEE7;border-radius:16px;padding:12px;display:flex"><img src="img/html_release.png" alt="トラップ開放後の密度。上段は古典粒子で丸くなるだけ、下段は量子で縦長に反転する" style="width:900px;height:574px;object-fit:contain"></div>
+<div style="background:#FFFFFF;border:2px solid #D9DEE7;border-radius:16px;padding:12px;display:flex"><img data-anim="img/anim_release.gif" src="img/html_release.png" alt="トラップ開放後の密度。上段は古典粒子で丸くなるだけ、下段は量子で縦長に反転する" style="width:900px;height:574px;object-fit:contain"></div>
 <div style="flex:1;display:flex;flex-direction:column;gap:20px">
 <p style="font-size:28px;line-height:1.5">ωx = 0.03125、ωy = 2 の横長の雲を t = 2 で開放</p>
 <p style="font-size:28px;line-height:1.5">狭く閉じ込めた y 方向ほど運動量の広がり Δp_y ~ ħ/Δy が大きい → <b>縦長へ反転</b></p>
@@ -218,7 +221,7 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 <h2 style="font-size:52px;font-weight:700;line-height:1.2">帯状のくぼみが崩れて、位相が 2π 巻く量子渦が生まれる</h2>
 <p style="font-size:28px;line-height:1.5">2 本のダークソリトン ψ₀ = tanh((x+x₀)/w) tanh((x−x₀)/w)（w = 1、x₀ = 6）＋ホワイトノイズ（振幅 10⁻²）、周期境界</p>
 <div style="background:#FFFFFF;border:2px solid #D9DEE7;border-radius:16px;padding:16px;display:flex;justify-content:center">
-<img src="img/html_soliton.png" alt="ダークソリトンの崩壊。上段が密度、下段が位相。点状のくぼみのまわりで位相が2π巻く" style="width:1500px;height:487px;object-fit:contain">
+<img data-anim="img/anim_soliton.gif" src="img/html_soliton.png" alt="ダークソリトンの崩壊。上段が密度、下段が位相。点状のくぼみのまわりで位相が2π巻く" style="width:1500px;height:487px;object-fit:contain">
 </div>
 <p style="font-size:32px;font-weight:700">巻き数 ±1 の量子渦：t = 60 で 12 個、t = 100 で 8 個</p>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6B7486">14 / 16</p>
@@ -255,7 +258,7 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 
 </div>
 <div id="notes"></div>
-<div id="bar"><button id="prev">◀ 前へ</button><span id="pg"></span><button id="next">次へ ▶</button><button id="nt">原稿（N）</button><button id="fs">全画面（F）</button></div>
+<div id="bar"><button id="prev">◀ 前へ</button><span id="pg"></span><button id="next">次へ ▶</button><button id="nt">原稿（N）</button><button id="fs">全画面（F）</button><button id="an">アニメ（A）</button></div>
 <script>
 const S=[...document.querySelectorAll('.slide')],st=document.getElementById('stage'),pg=document.getElementById('pg'),nb=document.getElementById('notes');
 let i=Math.max(0,Math.min(S.length-1,(parseInt(location.hash.slice(1))||1)-1)),showN=false;
@@ -267,5 +270,11 @@ addEventListener('keydown',e=>{if(['ArrowRight','PageDown',' ','Enter'].includes
 st.addEventListener('click',e=>go(e.clientX>innerWidth/2?i+1:i-1));
 document.getElementById('prev').onclick=()=>go(i-1);document.getElementById('next').onclick=()=>go(i+1);
 document.getElementById('nt').onclick=()=>{showN=!showN;go(i)};document.getElementById('fs').onclick=()=>{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()};
+const A=[...document.querySelectorAll('img[data-anim]')].map(im=>{im.dataset.still=im.getAttribute('src');const w=im.parentElement;w.classList.add('animwrap');const b=document.createElement('button');b.className='animbtn';b.textContent='▶ アニメーション';w.appendChild(b);const o={im,b,on:false};b.addEventListener('click',e=>{e.stopPropagation();setAnim(o,!o.on)});return o});
+function setAnim(o,on){o.on=on;o.im.src=on?o.im.dataset.anim+'?t='+Date.now():o.im.dataset.still;o.b.textContent=on?'■ 静止画に戻す':'▶ アニメーション';o.b.classList.toggle('on',on)}
+function toggleAnim(){A.filter(o=>S[i].contains(o.im)).forEach(o=>setAnim(o,!o.on))}
+const go0=go;go=function(k){A.forEach(o=>{if(o.on)setAnim(o,false)});go0(k)};
+addEventListener('keydown',e=>{if(e.key==='a'||e.key==='A')toggleAnim()});
+document.getElementById('an').onclick=toggleAnim;
 fit();go(i);
 </script></body></html>
