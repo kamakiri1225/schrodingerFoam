@@ -238,66 +238,65 @@ for (int corr = 0; corr &lt; nCorr; ++corr)
 <aside class="notes">オープンソースは、ソルバだけ用意しても使われません。そこで、とりあえず動く例題を4つ用意しました。量子トンネル、調和振動子、トラップ開放の3つは線形のシュレーディンガー方程式、ダークソリトンは非線形のGP方程式です。線形の例題では、ノルムの相対変動は計算期間を通して 10 のマイナス7乗以下に保たれました。</aside>
 </section>
 
-<section class="slide" id="tunnel" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:28px">
+<section class="slide" id="tunnel" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:20px">
 <p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム2026＠金沢　A51</p>
 <p style="font-size:26px;font-weight:700;color:#2F6FB0">例題 1　量子トンネル効果（1 次元）</p>
 <h2 style="color:#1F3A5F;border-bottom:3px solid #2F6FB0;padding-bottom:14px;font-size:56px;font-weight:700;line-height:1.2">古典的には越えられない障壁を、波束の一部が透過する</h2>
-<p style="font-size:28px;line-height:1.5">幅 <span class="tex">a=0.8</span>、高さ <span class="tex">V_0=2</span> の矩形障壁に、ガウス波束（<span class="tex">x_0=-15,\ \sigma=2,\ k_0=1.5</span>）を入射。運動エネルギー <span class="tex">E=1.125\lt V_0</span></p>
+<div style="border:2px solid #2F6FB0;background:#F5F8FC;padding:10px 22px;display:flex;align-items:center;gap:26px"><p style="font-size:24px;font-weight:700;color:#2F6FB0;flex:none">ポテンシャル</p><p style="font-size:30px;flex:none"><span class="tex">V(x)=\begin{cases}V_0 & |x|\lt a/2\\ 0 & \text{それ以外}\end{cases}</span></p><p style="font-size:23px;line-height:1.45;color:#222222">幅 <span class="tex">a=0.8</span>・高さ <span class="tex">V_0=2</span> の「壁」。波束のエネルギー <span class="tex">E=1.125\lt V_0</span> なので、古典粒子なら必ずはね返る</p></div>
+<p style="font-size:26px;line-height:1.4">ガウス波束（<span class="tex">x_0=-15,\ \sigma=2,\ k_0=1.5</span>）を左から入射</p>
 <div style="background:#FFFFFF;border:1px solid #9DB8D9;border-radius:0;padding:16px;display:flex;justify-content:center">
-<img data-anim="img/anim_tunneling.gif" src="img/fig_tunneling_directions.png" alt="量子トンネル効果での存在確率密度の時間変化。入射波束が障壁で反射と透過に分かれる" style="width:1600px;height:443px;object-fit:contain">
+<img data-anim="img/anim_tunneling.gif" src="img/fig_tunneling_directions.png" alt="量子トンネル効果での存在確率密度の時間変化。入射波束が障壁で反射と透過に分かれる" style="width:1600px;height:320px;object-fit:contain">
 </div>
 <div style="display:flex;gap:24px">
-<p style="flex:1;font-size:32px;font-weight:700;background:#FFFFFF;color:#111111;border:2px solid #2F6FB0;border-radius:0;padding:20px 28px">透過率（t = 22）：計算 0.380</p>
-<p style="flex:1;font-size:32px;font-weight:700;background:#FFFFFF;border:2px solid #2F6FB0;border-radius:0;padding:20px 28px">理論（波数分布で重み付け）：0.383</p>
+<p style="flex:1;font-size:30px;font-weight:700;background:#FFFFFF;color:#111111;border:2px solid #2F6FB0;border-radius:0;padding:12px 28px">透過率（t = 22）：計算 0.380</p>
+<p style="flex:1;font-size:30px;font-weight:700;background:#FFFFFF;border:2px solid #2F6FB0;border-radius:0;padding:12px 28px">理論（波数分布で重み付け）：0.383</p>
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">13 / 18</p>
 <aside class="notes">1つ目の例題、量子トンネル効果です。原点に矩形の障壁を置き、左からガウス波束を入射させます。波束のエネルギーは 1.125 で、障壁の高さ 2 より低い。古典的には全部はね返るはずですが、障壁に当たった波束は反射と透過に分かれ、t=16 にははっきり分裂します。障壁の右側の確率を積分した透過率は 0.380。平面波の透過係数を初期波束の波数分布で重み付け平均した理論値 0.383 とよく一致しました。</aside>
 </section>
 
-<section class="slide" id="harmonic" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:28px">
+<section class="slide" id="harmonic" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:18px">
 <p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム2026＠金沢　A51</p>
 <p style="font-size:26px;font-weight:700;color:#2F6FB0">例題 2　調和振動子ポテンシャル（1 次元）</p>
 <h2 style="color:#1F3A5F;border-bottom:3px solid #2F6FB0;padding-bottom:14px;font-size:56px;font-weight:700;line-height:1.2">コヒーレント状態は、形を保ったまま底を中心に往復する</h2>
-<p style="font-size:28px;line-height:1.5"><span class="tex">V(x)=\tfrac12\omega^2x^2\ (\omega=1)</span>。基底状態のガウス関数を <span class="tex">x_0=4</span> だけずらして初期値に。</p>
+<div style="border:2px solid #2F6FB0;background:#F5F8FC;padding:10px 22px;display:flex;align-items:center;gap:26px"><p style="font-size:24px;font-weight:700;color:#2F6FB0;flex:none">ポテンシャル</p><p style="font-size:30px;flex:none"><span class="tex">V(x)=\tfrac12\,\omega^2x^2\quad(\omega=1)</span></p><p style="font-size:23px;line-height:1.45;color:#222222">ばねのポテンシャル。底からずれるほど強く引き戻す（力 <span class="tex">F=-\omega^2x</span>、フックの法則）。基底状態を <span class="tex">x_0=4</span> ずらして初期値に</p></div>
 <div style="background:#FFFFFF;border:1px solid #9DB8D9;border-radius:0;padding:16px;display:flex;justify-content:center">
-<img data-anim="img/anim_harmonic.gif" src="img/html_harmonic.png" alt="調和ポテンシャル中のコヒーレント状態。波束が形を保って往復する" style="width:1500px;height:487px;object-fit:contain">
+<img data-anim="img/anim_harmonic.gif" src="img/html_harmonic.png" alt="調和ポテンシャル中のコヒーレント状態。波束が形を保って往復する" style="width:1500px;height:330px;object-fit:contain">
 </div>
-<p style="font-size:28px;line-height:1.5;color:#444444">安定なつり合い点のまわりをテイラー展開すると、なめらかなポテンシャルは放物線型（<span class="tex">\omega^2=V''(x_e)</span>）で近似できる。</p>
+<div style="display:flex;flex-direction:column;gap:8px"><p style="font-size:26px;font-weight:700;color:#2F6FB0">なぜ調和振動子を例題にするのか</p><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px"><div style="border:1px solid #9DB8D9;padding:12px 18px;display:flex;flex-direction:column;gap:6px"><p style="font-size:24px;font-weight:700;color:#1F3A5F">① どんな安定点も、近くでは放物線</p><p style="font-size:22px;line-height:1.45"><span class="tex">V(x)\approx V(x_e)+\tfrac12V^{\prime\prime}(x_e)(x-x_e)^2</span><br>小さな振動は、分子振動も格子振動もすべてこの形</p></div><div style="border:1px solid #9DB8D9;padding:12px 18px;display:flex;flex-direction:column;gap:6px"><p style="font-size:24px;font-weight:700;color:#1F3A5F">② 解析解があり、検証に使える</p><p style="font-size:22px;line-height:1.45">エネルギー準位 <span class="tex">E_n=\omega\,(n+\tfrac12)</span> が等間隔。数値解を厳密解と比べられる</p></div><div style="border:1px solid #9DB8D9;padding:12px 18px;display:flex;flex-direction:column;gap:6px"><p style="font-size:24px;font-weight:700;color:#1F3A5F">③ 古典の運動と厳密に一致</p><p style="font-size:22px;line-height:1.45">準位が等間隔なので波束は崩れず、<span class="tex">\langle x\rangle=x_0\cos\omega t</span>（ばねの往復運動そのもの）</p></div></div></div>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">14 / 18</p>
 <aside class="notes">2つ目は調和振動子です。放物線型のポテンシャルは、なめらかなポテンシャルを安定なつり合い点まわりでテイラー展開したときの主要項で、小さな振動はこれで近似できます。基底状態を 4 だけずらしたコヒーレント状態を初期値にすると、波束は形をほぼ保ったまま、ポテンシャルの底を中心に周期的に往復します。</aside>
 </section>
 
-<section class="slide" id="release" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:24px">
+<section class="slide" id="release" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:18px">
 <p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム2026＠金沢　A51</p>
 <p style="font-size:26px;font-weight:700;color:#2F6FB0">例題 3　トラップの開放（2 次元）</p>
 <h2 style="color:#1F3A5F;border-bottom:3px solid #2F6FB0;padding-bottom:14px;font-size:52px;font-weight:700;line-height:1.2">量子の雲は、縦横比が反転する（不確定性原理）</h2>
-<div style="display:flex;gap:32px;align-items:center">
-<div style="background:#FFFFFF;border:1px solid #9DB8D9;border-radius:0;padding:12px;display:flex"><img data-anim="img/anim_release.gif" src="img/html_release.png" alt="トラップ開放後の密度。上段は古典粒子で丸くなるだけ、下段は量子で縦長に反転する" style="width:900px;height:574px;object-fit:contain"></div>
-<div style="flex:1;display:flex;flex-direction:column;gap:20px">
-<p style="font-size:28px;line-height:1.5"><span class="tex">\omega_x=0.03125,\ \omega_y=2</span> の横長の雲を <span class="tex">t=2</span> で開放</p>
-<p style="font-size:28px;line-height:1.5">狭く閉じ込めた y 方向ほど運動量の広がり <span class="tex">\Delta p_y\sim\hbar/\Delta y</span> が大きい → <b>縦長へ反転</b></p>
-<table style="font-family:'Noto Sans JP', Arial, sans-serif;font-size:26px;color:#111111;background:#FFFFFF">
-<tr><th style="width:20%">t</th><th style="width:40%"><span class="tex">\sigma_x</span>（解析）</th><th style="width:40%"><span class="tex">\sigma_y</span>（解析）</th></tr>
+<div style="border:2px solid #2F6FB0;background:#F5F8FC;padding:10px 22px;display:flex;align-items:center;gap:26px"><p style="font-size:24px;font-weight:700;color:#2F6FB0;flex:none">ポテンシャル</p><p style="font-size:30px;flex:none"><span class="tex">V=\begin{cases}\tfrac12(\omega_x^2x^2+\omega_y^2y^2) & t\lt 2\\ 0 & t\ge 2\end{cases}</span></p><p style="font-size:23px;line-height:1.45;color:#222222">x 方向にゆるく（<span class="tex">\omega_x=0.03125</span>）、y 方向にきつい（<span class="tex">\omega_y=2</span>）楕円の「お椀」に閉じ込め、<span class="tex">t=2</span> でお椀を取り去る（自由膨張）</p></div>
+<div style="display:flex;gap:28px;align-items:flex-start">
+<div style="background:#FFFFFF;border:1px solid #9DB8D9;border-radius:0;padding:12px;display:flex"><img data-anim="img/anim_release.gif" src="img/html_release.png" alt="トラップ開放後の密度。上段は古典粒子で丸くなるだけ、下段は量子で縦長に反転する" style="width:700px;height:446px;object-fit:contain"></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px"><p style="font-size:23px;line-height:1.4"><b>意図：</b>同じ横長の雲でも、古典と量子で広がり方が逆になる（<span class="tex">\tau=t-2</span>）</p><div style="border:1px solid #9DB8D9;padding:8px 16px;display:flex;flex-direction:column;gap:4px"><p style="font-size:22px;font-weight:700;color:#1F3A5F">古典粒子（熱的、速度分布は等方的）</p><p style="font-size:24px"><span class="tex">x_j(t)=x_{j0}+v_j\tau\ \ \Rightarrow\ \ \sigma_j^2=\sigma_{j0}^2+\sigma_v^2\tau^2</span></p><p style="font-size:21px;color:#444444">どの方向も同じ速さで広がる → 丸くなるだけ</p></div><div style="border:1px solid #9DB8D9;padding:8px 16px;display:flex;flex-direction:column;gap:4px"><p style="font-size:22px;font-weight:700;color:#1F3A5F">量子（不確定性原理）</p><p style="font-size:24px"><span class="tex">\Delta p_j=\dfrac{\hbar}{2\sigma_{j0}}\ \ \Rightarrow\ \ \sigma_j=\sigma_{j0}\sqrt{1+(\omega_j\tau)^2}</span></p><p style="font-size:21px;color:#444444">きつく閉じ込めた y 方向ほど運動量の広がりが大きく、速く膨張 → <b>縦長へ反転</b></p></div><table class="compact" style="font-family:'Noto Sans JP', Arial, sans-serif;font-size:21px;color:#111111;background:#FFFFFF">
+<tr><th style="width:20%">t（ ）は解析解</th><th style="width:40%"><span class="tex">\sigma_x</span>（解析）</th><th style="width:40%"><span class="tex">\sigma_y</span>（解析）</th></tr>
 <tr><td>0</td><td>4.000（4.000）</td><td>0.500（0.500）</td></tr>
 <tr><td>6</td><td>4.031（4.031）</td><td>3.967（4.031）</td></tr>
 <tr><td>10</td><td>4.123（4.123）</td><td>7.786（8.016）</td></tr>
 </table>
-<p style="font-size:24px;color:#444444">t = 6 で縦横比 ≈ 1（解析解の反転時刻）。t = 10 の <span class="tex">\sigma_y</span> は境界の影響で −2.9 %</p>
 </div>
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">15 / 18</p>
 <aside class="notes">3つ目はトラップの開放です。x 方向にゆるく、y 方向にきつく閉じ込めた横長の雲を、t=2 で開放します。上段の古典粒子は速度分布が等方的なので、丸くなるだけで縦長にはなりません。下段の量子では、不確定性原理により、狭く閉じ込めていた y 方向ほど運動量の広がりが大きく、y 方向が速く膨張して縦長へ反転します。自由膨張の解析解と比べると、縦横比は解析どおり t=6 でほぼ1になりました。t=10 の σy が 2.9% 小さいのは、裾が計算領域の境界に達した影響です。</aside>
 </section>
 
-<section class="slide" id="soliton" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:24px">
+<section class="slide" id="soliton" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:16px">
 <p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム2026＠金沢　A51</p>
 <p style="font-size:26px;font-weight:700;color:#2F6FB0">例題 4　ダークソリトンからの量子渦生成（2 次元、GP 方程式 g = 1）</p>
 <h2 style="color:#1F3A5F;border-bottom:3px solid #2F6FB0;padding-bottom:14px;font-size:52px;font-weight:700;line-height:1.2">帯状のくぼみが崩れて、位相が 2π 巻く量子渦が生まれる</h2>
-<p style="font-size:28px;line-height:1.5">2 本のダークソリトン <span class="tex">\psi_0=\tanh\frac{x+x_0}{w}\,\tanh\frac{x-x_0}{w}</span>（<span class="tex">w=1,\ x_0=6</span>）＋ホワイトノイズ（振幅 <span class="tex">10^{-2}</span>）、周期境界</p>
+<div style="border:2px solid #2F6FB0;background:#F5F8FC;padding:10px 22px;display:flex;align-items:center;gap:26px"><p style="font-size:24px;font-weight:700;color:#2F6FB0;flex:none">ポテンシャル</p><p style="font-size:30px;flex:none"><span class="tex">V_{\mathrm{ext}}=0,\qquad W=g|\psi|^2\ \ (g=1)</span></p><p style="font-size:23px;line-height:1.45;color:#222222">外からの力はなし（周期境界）。粒子どうしの反発 <span class="tex">g|\psi|^2</span> が「自分自身が作るポテンシャル」になり、密度の高い所ほど押し返す</p></div>
+<p style="font-size:24px;line-height:1.4">初期値：2 本のダークソリトン（密度が 0 に落ちた帯） <span class="tex">\psi_0=\tanh\frac{x+x_0}{w}\,\tanh\frac{x-x_0}{w}</span>（<span class="tex">w=1,\ x_0=6</span>）＋ホワイトノイズ（振幅 <span class="tex">10^{-2}</span>）、周期境界</p>
 <div style="background:#FFFFFF;border:1px solid #9DB8D9;border-radius:0;padding:16px;display:flex;justify-content:center">
-<img data-anim="img/anim_soliton.gif" src="img/html_soliton.png" alt="ダークソリトンの崩壊。上段が密度、下段が位相。点状のくぼみのまわりで位相が2π巻く" style="width:1500px;height:487px;object-fit:contain">
+<img data-anim="img/anim_soliton.gif" src="img/html_soliton.png" alt="ダークソリトンの崩壊。上段が密度、下段が位相。点状のくぼみのまわりで位相が2π巻く" style="width:1500px;height:400px;object-fit:contain">
 </div>
-<p style="font-size:32px;font-weight:700">巻き数 ±1 の量子渦：t = 60 で 12 個、t = 100 で 8 個</p>
+<p style="font-size:30px;font-weight:700">巻き数 ±1 の量子渦：t = 60 で 12 個、t = 100 で 8 個</p>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">16 / 18</p>
 <aside class="notes">4つ目は、非線形のGP方程式の例です。量子流体に特有の現象として、ダークソリトンの崩壊による量子渦の生成を扱いました。2本のまっすぐなダークソリトンに小さなノイズを加えて発展させると、帯状の低密度領域が曲がり、点状のくぼみに分裂します。下段の位相を見ると、点のまわりを一周すると位相が 2π 変わっていて、これが量子渦です。各セルを囲む位相差から数えると、t=60 で12個、t=100 で8個の渦がありました。</aside>
 </section>
