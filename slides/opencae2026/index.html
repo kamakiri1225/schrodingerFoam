@@ -20,8 +20,8 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 .animwrap{position:relative}
 .animbtn{position:absolute;right:128px;bottom:56px;z-index:5;font-family:'Noto Sans JP',Arial,sans-serif;font-size:22px;padding:4px 14px;border-radius:0;border:1px solid #2F6FB0;background:#FFFFFF;color:#2F6FB0;cursor:pointer}
 .animbtn.on{background:#E3ECF7}
-</style><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+</style><link rel="stylesheet" href="vendor/katex/katex.min.css">
+<script src="vendor/katex/katex.min.js"></script>
 <style>.tex .katex{font-size:1.05em}</style>
 </head><body>
 <div id="stage">
@@ -48,24 +48,7 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 <aside class="notes">OpenFOAMは流体解析の印象が強いですが、応力、拡散、ポテンシャル流れ、金融までソルバとチュートリアルが同梱されています。大きくは、偏微分方程式を有限体積法で解くフレームワークと考えてよい。だとすれば、時間と空間の微分を含むシュレーディンガー方程式も解けるはず、というのが出発点です。</aside>
 </section>
 
-<section class="slide" id="classical" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:30px">
-<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム2026＠金沢　A51</p>
-<p style="font-size:26px;font-weight:700;color:#2F6FB0">古典と量子の基礎方程式</p>
-<h2 style="color:#1F3A5F;border-bottom:3px solid #2F6FB0;padding-bottom:14px;font-size:56px;font-weight:700;line-height:1.2">シュレーディンガー方程式は「拡散方程式に <i>i</i> が付いた形」</h2>
-<table class="compact" style="font-family:'Noto Sans JP', Arial, sans-serif;font-size:28px;color:#111111;background:#FFFFFF">
-<tr><th style="width:20%">対象</th><th style="width:56%">基礎方程式</th><th style="width:24%">OpenFOAM のソルバ</th></tr>
-<tr><td>質点の古典力学</td><td style="font-size:26px;white-space:nowrap"><span class="tex">m\,\dfrac{d^2\boldsymbol{x}}{dt^2} = -\nabla V(\boldsymbol{x})</span></td><td>ニュートンの運動方程式（常微分方程式）</td></tr>
-<tr><td>熱伝導・拡散</td><td style="font-size:26px;white-space:nowrap"><span class="tex">\dfrac{\partial T}{\partial t} = \alpha\nabla^2 T</span></td><td>laplacianFoam</td></tr>
-<tr><td>流体（非圧縮）</td><td style="font-size:26px;white-space:nowrap"><span class="tex">\dfrac{\partial \boldsymbol{u}}{\partial t} + (\boldsymbol{u}\cdot\nabla)\boldsymbol{u} = -\dfrac{\nabla p}{\rho} + \nu\nabla^2\boldsymbol{u}</span></td><td>icoFoam など</td></tr>
-<tr><td>量子力学</td><td style="font-size:26px;white-space:nowrap"><span class="tex">i\hbar\dfrac{\partial\psi}{\partial t} = -\dfrac{\hbar^2}{2m}\nabla^2\psi + V\psi</span></td><td>schrodingerFoam（本研究）</td></tr>
-<tr><td>量子流体（BEC）</td><td style="font-size:26px;white-space:nowrap"><span class="tex">i\hbar\dfrac{\partial\psi}{\partial t} = -\dfrac{\hbar^2}{2m}\nabla^2\psi + V\psi + g|\psi|^2\psi</span></td><td>schrodingerFoam（<i>g</i> ≠ 0）</td></tr>
-</table>
-<p style="font-size:30px;line-height:1.5">場の方程式は、どれも「時間微分 ＝ ラプラシアン ＋ ポテンシャル項」の形。</p>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">3 / 18</p>
-<aside class="notes">古典力学や流体の基礎式と並べてみます。質点の古典力学はニュートンの運動方程式で、これは常微分方程式です。場の方程式では、熱伝導は拡散方程式で laplacianFoam、流体はナビエ・ストークス方程式で icoFoam などが解きます。シュレーディンガー方程式は、拡散方程式の時間微分に虚数単位 i が付いた形で、右辺はラプラシアンとポテンシャルの項です。GP 方程式は、これに非線形項 g|ψ|²ψ を加えたものです。古典との対応として、位置と運動量の期待値はニュートンの運動方程式に従い、これをエーレンフェストの定理と言います。調和ポテンシャルでは厳密に一致し、例題2で確かめます。また、ψ をルートρ かける e の iθ と置くマーデルング変換をすると、GP 方程式は連続の式と、量子圧力項の付いたオイラー方程式になります。これが量子流体と呼ばれる理由です。</aside>
-</section>
-
-<section class="slide" id="classical2" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 150px;display:flex;flex-direction:column;gap:24px">
+<section class="slide" id="classical2" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 150px;display:flex;flex-direction:column;gap:18px">
 <p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム2026＠金沢　A51</p>
 <p style="font-size:26px;font-weight:700;color:#2F6FB0">古典力学から量子力学へ</p>
 <h2 style="color:#1F3A5F;border-bottom:3px solid #2F6FB0;padding-bottom:14px;font-size:52px;font-weight:700;line-height:1.2">ハミルトニアンの <i>p</i> を演算子に置き換えて量子化する</h2>
@@ -74,12 +57,32 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 <p style="font-size:26px;font-weight:700;color:#2F6FB0">量子化</p>
 <p style="font-size:32px"><span class="tex">\boldsymbol{p}\ \to\ -i\hbar\nabla \quad\Longrightarrow\quad \hat H = -\dfrac{\hbar^2}{2m}\nabla^2 + V,\qquad i\hbar\dfrac{\partial\psi}{\partial t} = \hat H\psi</span></p>
 </div>
+<p style="font-size:24px;line-height:1.45">相対論では <span class="tex">E^2=p^2c^2+m^2c^4</span> に <span class="tex">E\to i\hbar\,\partial_t,\ \boldsymbol{p}\to -i\hbar\nabla</span> を入れると、クライン–ゴルドン方程式 <span class="tex">\tfrac{1}{c^2}\partial_t^2\psi=\nabla^2\psi-(mc/\hbar)^2\psi</span></p>
 <div style="display:flex;flex-direction:column;gap:8px">
 <p style="font-size:26px;line-height:1.5">・エーレンフェストの定理：期待値 <span class="tex">\langle x\rangle</span>、<span class="tex">\langle p\rangle</span> はニュートンの運動方程式に従う（調和ポテンシャルでは厳密に一致 → 例題 2）</p>
 <p style="font-size:26px;line-height:1.5">・<span class="tex">\psi=\sqrt{\rho}\,e^{iS/\hbar}</span> と置くと、位相 <span class="tex">S</span> は量子ポテンシャル項の付いたハミルトン–ヤコビ方程式に従う（<span class="tex">\hbar\to 0</span> で古典）。GP 方程式では連続の式＋オイラー方程式 → 「量子流体」</p>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;font-size:24px;color:#666666">4 / 18</p>
+<p style="position:absolute;left:128px;bottom:64px;font-size:24px;color:#666666">3 / 18</p>
 <aside class="notes">古典力学には、ニュートン形式のほかに、ラグランジュ形式とハミルトン形式があります。ニュートン形式は力と加速度、ラグランジュ形式は運動エネルギーとポテンシャルの差 L から、最小作用の原理で運動を決めます。ハミルトン形式は位置 q と運動量 p を対等に扱い、全エネルギー H から1階の方程式を2本立てます。量子力学へは、このハミルトニアンの運動量 p を、マイナス i ħ ナブラという演算子に置き換えます。すると運動エネルギーがラプラシアンになり、シュレーディンガー方程式が得られます。古典との対応として、期待値はニュートンの運動方程式に従い、これがエーレンフェストの定理です。調和ポテンシャルでは厳密に一致し、例題2で確かめます。また、ψ をルートρ かける e の iS/ħ と置くと、位相 S は量子ポテンシャル項の付いたハミルトン・ヤコビ方程式に従い、ħ を0にすると古典に戻ります。GP方程式では、これが連続の式とオイラー方程式になり、量子流体と呼ばれる理由です。</aside>
+</section>
+
+<section class="slide" id="classical" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:20px">
+<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム2026＠金沢　A51</p>
+<p style="font-size:26px;font-weight:700;color:#2F6FB0">いろいろな方程式と OpenFOAM のソルバ</p>
+<h2 style="color:#1F3A5F;border-bottom:3px solid #2F6FB0;padding-bottom:14px;font-size:50px;font-weight:700;line-height:1.2">シュレーディンガー方程式は「拡散方程式に <i>i</i> が付いた形」</h2>
+<table class="compact" style="font-family:'Noto Sans JP', Arial, sans-serif;font-size:24px;color:#111111;background:#FFFFFF">
+<tr><th style="width:20%">対象</th><th style="width:56%">基礎方程式</th><th style="width:24%">OpenFOAM のソルバ</th></tr>
+<tr><td>質点の古典力学</td><td style="font-size:22px;white-space:nowrap"><span class="tex">m\,\dfrac{d^2\boldsymbol{x}}{dt^2} = -\nabla V(\boldsymbol{x})</span></td><td>ニュートンの運動方程式（常微分方程式）</td></tr>
+<tr><td>熱伝導・拡散</td><td style="font-size:22px;white-space:nowrap"><span class="tex">\dfrac{\partial T}{\partial t} = \alpha\nabla^2 T</span></td><td>laplacianFoam</td></tr>
+<tr><td>流体（非圧縮）</td><td style="font-size:22px;white-space:nowrap"><span class="tex">\dfrac{\partial \boldsymbol{u}}{\partial t} + (\boldsymbol{u}\cdot\nabla)\boldsymbol{u} = -\dfrac{\nabla p}{\rho} + \nu\nabla^2\boldsymbol{u}</span></td><td>icoFoam など</td></tr>
+<tr><td>電磁場（マクスウェル）</td><td style="font-size:22px;white-space:nowrap"><span class="tex">\nabla\times\boldsymbol{E}=-\dfrac{\partial\boldsymbol{B}}{\partial t},\quad \nabla\times\boldsymbol{H}=\boldsymbol{J}+\dfrac{\partial\boldsymbol{D}}{\partial t}</span></td><td>electrostaticFoam、mhdFoam</td></tr>
+<tr><td>量子力学</td><td style="font-size:22px;white-space:nowrap"><span class="tex">i\hbar\dfrac{\partial\psi}{\partial t} = -\dfrac{\hbar^2}{2m}\nabla^2\psi + V\psi</span></td><td>schrodingerFoam（本研究）</td></tr>
+<tr><td>量子流体（BEC）</td><td style="font-size:22px;white-space:nowrap"><span class="tex">i\hbar\dfrac{\partial\psi}{\partial t} = -\dfrac{\hbar^2}{2m}\nabla^2\psi + V\psi + g|\psi|^2\psi</span></td><td>schrodingerFoam（<i>g</i> ≠ 0）</td></tr>
+<tr><td>相対論的量子（クライン–ゴルドン）</td><td style="font-size:22px;white-space:nowrap"><span class="tex">\dfrac{1}{c^2}\dfrac{\partial^2\psi}{\partial t^2}=\nabla^2\psi-\left(\dfrac{mc}{\hbar}\right)^2\psi</span></td><td>（同じ枠組みで実装可能）</td></tr>
+</table>
+<p style="font-size:28px;line-height:1.45">場の方程式は、どれも「時間微分 ＝ 空間微分（ラプラシアン・回転）＋ ソース項」の形。<br><b style="color:#C62828">→ シュレーディンガー方程式も、OpenFOAM で解けそう</b></p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">4 / 18</p>
+<aside class="notes">ほかにも、電磁場のマクスウェル方程式は electrostaticFoam や mhdFoam で、相対論的なクライン・ゴルドン方程式も時間の2階微分とラプラシアンの形なので、同じ枠組みで扱えます。古典力学や流体の基礎式と並べてみます。質点の古典力学はニュートンの運動方程式で、これは常微分方程式です。場の方程式では、熱伝導は拡散方程式で laplacianFoam、流体はナビエ・ストークス方程式で icoFoam などが解きます。シュレーディンガー方程式は、拡散方程式の時間微分に虚数単位 i が付いた形で、右辺はラプラシアンとポテンシャルの項です。GP 方程式は、これに非線形項 g|ψ|²ψ を加えたものです。古典との対応として、位置と運動量の期待値はニュートンの運動方程式に従い、これをエーレンフェストの定理と言います。調和ポテンシャルでは厳密に一致し、例題2で確かめます。また、ψ をルートρ かける e の iθ と置くマーデルング変換をすると、GP 方程式は連続の式と、量子圧力項の付いたオイラー方程式になります。これが量子流体と呼ばれる理由です。</aside>
 </section>
 
 <section class="slide" id="purpose" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
@@ -144,35 +147,27 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 <aside class="notes">実装の1つ目。OpenFOAM には複素数の場はありますが、行列を解く陰的演算には対応していませんでした。そこで波動関数を実部 u と虚部 v に分けます。ハミルトニアンの係数はすべて実数なので、実部と虚部を比べると、u の時間変化は H v、v の時間変化は マイナス H u という2本の実方程式になり、既存の実スカラー場でそのまま扱えます。</aside>
 </section>
 
-<section class="slide" id="timestep" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:28px">
+<section class="slide" id="timestep" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:18px">
 <p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム2026＠金沢　A51</p>
 <p style="font-size:26px;font-weight:700;color:#2F6FB0">実装 2　ノルム保存の時間離散化</p>
-<h2 style="color:#1F3A5F;border-bottom:3px solid #2F6FB0;padding-bottom:14px;font-size:60px;font-weight:700;line-height:1.2">前進オイラーは必ず発散、クランク・ニコルソンは |G| = 1</h2>
+<h2 style="color:#1F3A5F;border-bottom:3px solid #2F6FB0;padding-bottom:14px;font-size:54px;font-weight:700;line-height:1.2">前進オイラーは必ず発散、クランク・ニコルソンは |G| = 1</h2>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
-<div style="background:#FFFFFF;border:1px solid #9DB8D9;border-radius:0;padding:24px;display:flex;flex-direction:column;gap:12px;align-items:center"><p style="font-size:26px;font-weight:700;color:#2F6FB0">前進オイラー法（陽解法）</p><img src="img/eq_fe.png" alt="前進オイラー法の増幅率は1より大きい" style="width:740px;height:75px;object-fit:contain"><p style="font-size:26px">Δt をどれだけ小さくしても増幅（無条件不安定）</p></div>
-<div style="background:#FFFFFF;border:1px solid #9DB8D9;border-radius:0;padding:24px;display:flex;flex-direction:column;gap:12px;align-items:center"><p style="font-size:28px;font-weight:700;color:#2F6FB0">クランク・ニコルソン法（θ = 1/2）</p><img src="img/eq_cn.png" alt="クランク・ニコルソン法の増幅率の絶対値は1" style="width:443px;height:84px;object-fit:contain"><p style="font-size:26px">分子と分母が複素共役 → 任意の Δt でノルム保存</p></div>
+<div style="background:#FFFFFF;border:1px solid #9DB8D9;border-radius:0;padding:14px 18px;display:flex;flex-direction:column;gap:6px;align-items:center"><p style="font-size:26px;font-weight:700;color:#2F6FB0">前進オイラー法（陽解法）：今の値だけで右辺を評価</p><p style="font-size:26px"><span class="tex">\dfrac{\psi^{n+1}-\psi^n}{\Delta t}=-iH\psi^n\ \Rightarrow\ \psi^{n+1}=(1-i\Delta t\,H)\,\psi^n</span></p><p style="font-size:20px;color:#555555">固有値 E のモードでは</p><img src="img/eq_fe.png" alt="前進オイラー法の増幅率は1より大きい" style="width:740px;height:75px;object-fit:contain"><p style="font-size:26px">Δt をどれだけ小さくしても増幅（無条件不安定）</p></div>
+<div style="background:#FFFFFF;border:1px solid #9DB8D9;border-radius:0;padding:14px 18px;display:flex;flex-direction:column;gap:6px;align-items:center"><p style="font-size:26px;font-weight:700;color:#2F6FB0">クランク・ニコルソン法：新旧の平均で右辺を評価</p><p style="font-size:26px"><span class="tex">\dfrac{\psi^{n+1}-\psi^n}{\Delta t}=-\dfrac{i}{2}H\left(\psi^{n+1}+\psi^n\right)\ \Rightarrow\ \psi^{n+1}=\dfrac{1-\frac{i}{2}\Delta t\,H}{1+\frac{i}{2}\Delta t\,H}\,\psi^n</span></p><p style="font-size:20px;color:#555555">固有値 E のモードでは</p><img src="img/eq_cn.png" alt="クランク・ニコルソン法の増幅率の絶対値は1" style="width:443px;height:84px;object-fit:contain"><p style="font-size:26px">分子と分母が複素共役 → 任意の Δt でノルム保存</p></div>
 </div>
-<img src="img/fig_amplification.png" alt="増幅率の比較：前進オイラー法は1を超えて増え続け、クランク・ニコルソン法は1のまま" style="width:1664px;height:330px;object-fit:contain">
+<img src="img/fig_amplification.png" alt="増幅率の比較：前進オイラー法は1を超えて増え続け、クランク・ニコルソン法は1のまま" style="width:1664px;height:250px;object-fit:contain">
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">9 / 18</p>
-<aside class="notes">実装の2つ目、時間の刻み方です。H の固有モードで考えると、1ステップの増幅率 G の大きさが1かどうかで、ノルム、つまり全確率が保たれるかが決まります。最初は laplacianFoam をそのまま使った前進オイラー法でしたが、増幅率は1より大きく、Δt をどれだけ小さくしても発散しました。右のグラフのように、ステップ数とともに振幅が増え続けます。クランク・ニコルソン法では分子と分母が複素共役になり、任意の Δt で大きさが1です。右辺に未知の値が含まれるので、各ステップで Picard 反復を回して収束させます。</aside>
+<aside class="notes">式で書くと、前進オイラー法は右辺のハミルトニアンを今の時刻の値だけで評価し、ψ^{n+1} = (1 − iΔtH)ψ^n です。クランク・ニコルソン法は新旧の平均で評価するので、分子と分母に 1 ∓ iΔtH/2 が現れます。実装の2つ目、時間の刻み方です。H の固有モードで考えると、1ステップの増幅率 G の大きさが1かどうかで、ノルム、つまり全確率が保たれるかが決まります。最初は laplacianFoam をそのまま使った前進オイラー法でしたが、増幅率は1より大きく、Δt をどれだけ小さくしても発散しました。右のグラフのように、ステップ数とともに振幅が増え続けます。クランク・ニコルソン法では分子と分母が複素共役になり、任意の Δt で大きさが1です。右辺に未知の値が含まれるので、各ステップで Picard 反復を回して収束させます。</aside>
 </section>
 
-<section class="slide" id="imag" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:28px">
+<section class="slide" id="imag" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 150px;display:flex;flex-direction:column;gap:22px">
 <p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム2026＠金沢　A51</p>
 <p style="font-size:26px;font-weight:700;color:#2F6FB0">実装 3　虚時間発展による基底状態</p>
 <h2 style="color:#1F3A5F;border-bottom:3px solid #2F6FB0;padding-bottom:14px;font-size:60px;font-weight:700;line-height:1.2"><span class="tex">t=-i\tau</span> と置くと、基底状態だけが残る</h2>
-<div style="background:#FFFFFF;border:1px solid #9DB8D9;border-radius:0;padding:28px;display:flex;flex-direction:column;gap:12px;align-items:center">
-<img src="img/eq_imagexp.png" alt="虚時間での展開。励起成分が減衰する" style="width:1003px;height:145px;object-fit:contain">
-<p style="font-size:28px"><span class="tex">E_n-E_0>0</span> の成分は減衰する。ただし全体の大きさも変わる → <span class="tex">\mu</span> を引いてノルムを保つ</p>
-</div>
-<div style="display:flex;gap:32px;align-items:center">
-<div style="background:#FFFFFF;border:1px solid #9DB8D9;border-radius:0;padding:24px;display:flex;align-items:center"><img src="img/eq_imag.png" alt="μを引いた虚時間発展の式とμの定義" style="width:651px;height:174px;object-fit:contain"></div>
-<div style="flex:1;display:flex;flex-direction:column;gap:12px">
-<p style="font-size:28px;line-height:1.5">拡散方程式と同じ形 → laplacianFoam 由来の <b>fvm:: で完全陰的に解ける</b></p>
-<p style="font-size:28px;line-height:1.5">各ステップ後に <span class="tex">\int|\psi|^2dV</span> を規格化し直す</p>
-<p style="font-size:28px;line-height:1.5">収束すると <span class="tex">H\psi=\mu\psi</span>（定常 GP 方程式）</p>
-</div>
-</div>
+<p style="font-size:26px;font-weight:700;color:#2F6FB0">意味：時間を虚数にすると「振動」が「減衰」に変わる</p>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px"><div style="border:1px solid #9DB8D9;padding:14px 22px;display:flex;flex-direction:column;gap:8px"><p style="font-size:26px;font-weight:700;color:#1F3A5F">実時間 t</p><p style="font-size:36px"><span class="tex">\psi=\sum_n c_n\,e^{-iE_n t}\,\phi_n</span></p><p style="font-size:26px;line-height:1.5">各成分は位相が回るだけで、大きさ |c<sub>n</sub>| は変わらない → 基底状態だけを取り出せない</p></div><div style="border:2px solid #2F6FB0;background:#F5F8FC;padding:14px 22px;display:flex;flex-direction:column;gap:8px"><p style="font-size:26px;font-weight:700;color:#1F3A5F">虚時間 t = −iτ</p><p style="font-size:36px"><span class="tex">\psi=\sum_n c_n\,e^{-E_n\tau}\,\phi_n</span></p><p style="font-size:26px;line-height:1.5">エネルギーが高い成分ほど速く減衰 → 最後に基底状態 φ<sub>0</sub> だけが残る（細かい凹凸ほど早くならされる拡散と同じ）</p></div></div>
+<p style="font-size:26px;font-weight:700;color:#2F6FB0">手続き：拡散方程式と同じ形なので、laplacianFoam の陰解法がそのまま使える</p>
+<div style="display:grid;grid-template-columns:1fr auto 1.25fr auto 1.2fr auto 1fr;gap:10px;align-items:stretch"><div style="border:1px solid #9DB8D9;padding:16px 18px;display:flex;flex-direction:column;gap:8px"><p style="font-size:24px;font-weight:700;color:#1F3A5F">① 初期値</p><p style="font-size:24px;line-height:1.5">ガウス関数など、適当な形でよい</p></div><p style="font-size:34px;color:#2F6FB0;align-self:center">→</p><div style="border:1px solid #9DB8D9;padding:16px 18px;display:flex;flex-direction:column;gap:8px"><p style="font-size:24px;font-weight:700;color:#1F3A5F">② 1 ステップ進める</p><p style="font-size:24px;line-height:1.5"><span class="tex">\dfrac{\partial\psi}{\partial\tau}=-(H-\mu)\psi</span> を fvm:: で完全陰的に解く</p></div><p style="font-size:34px;color:#2F6FB0;align-self:center">→</p><div style="border:1px solid #9DB8D9;padding:16px 18px;display:flex;flex-direction:column;gap:8px"><p style="font-size:24px;font-weight:700;color:#1F3A5F">③ 規格化・μ 更新</p><p style="font-size:24px;line-height:1.5"><span class="tex">\int|\psi|^2dV</span> を元に戻し、<br><span class="tex">\mu=\dfrac{\langle\psi|H|\psi\rangle}{\langle\psi|\psi\rangle}</span></p></div><p style="font-size:34px;color:#2F6FB0;align-self:center">→</p><div style="border:1px solid #9DB8D9;padding:16px 18px;display:flex;flex-direction:column;gap:8px"><p style="font-size:24px;font-weight:700;color:#1F3A5F">④ 収束判定</p><p style="font-size:24px;line-height:1.5">μ が変わらなくなれば <span class="tex">H\psi=\mu\psi</span>（基底状態）→ 実時間の初期値へ</p></div></div>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">10 / 18</p>
 <aside class="notes">実装の3つ目は、初期状態づくりです。基底状態でない初期条件で実時間発展を始めると、余分なエネルギーが音波として混ざり、見たい現象が乱れます。実時間発展では各成分の位相が回るだけなので、基底状態を取り出せません。そこで t をマイナス i τ と置くと、励起成分が指数関数的に減衰し、基底状態だけが残ります。ただし全体の大きさも変わるので、μ を引いてノルムを保ちます。μ はGP方程式では化学ポテンシャル、g が 0 では基底エネルギーです。この式は拡散方程式と同じ形なので、laplacianFoam 由来の陰的演算でそのまま解け、各ステップで規格化し直します。</aside>
 </section>
@@ -274,8 +269,9 @@ for (int corr = 0; corr &lt; nCorr; ++corr)
 <h2 style="color:#1F3A5F;border-bottom:3px solid #2F6FB0;padding-bottom:14px;font-size:52px;font-weight:700;line-height:1.2">量子の雲は、縦横比が反転する（不確定性原理）</h2>
 <div style="border:2px solid #2F6FB0;background:#F5F8FC;padding:10px 22px;display:flex;align-items:center;gap:26px"><p style="font-size:24px;font-weight:700;color:#2F6FB0;flex:none">ポテンシャル</p><p style="font-size:30px;flex:none"><span class="tex">V=\begin{cases}\tfrac12(\omega_x^2x^2+\omega_y^2y^2) & t\lt 2\\ 0 & t\ge 2\end{cases}</span></p><p style="font-size:23px;line-height:1.45;color:#222222">x 方向にゆるく（<span class="tex">\omega_x=0.03125</span>）、y 方向にきつい（<span class="tex">\omega_y=2</span>）楕円の「お椀」に閉じ込め、<span class="tex">t=2</span> でお椀を取り去る（自由膨張）</p></div>
 <div style="display:flex;gap:28px;align-items:flex-start">
-<div style="background:#FFFFFF;border:1px solid #9DB8D9;border-radius:0;padding:12px;display:flex"><img data-anim="img/anim_release.gif" src="img/html_release.png" alt="トラップ開放後の密度。上段は古典粒子で丸くなるだけ、下段は量子で縦長に反転する" style="width:700px;height:446px;object-fit:contain"></div>
-<div style="flex:1;display:flex;flex-direction:column;gap:12px"><p style="font-size:23px;line-height:1.4"><b>意図：</b>同じ横長の雲でも、古典と量子で広がり方が逆になる（<span class="tex">\tau=t-2</span>）</p><div style="border:1px solid #9DB8D9;padding:8px 16px;display:flex;flex-direction:column;gap:4px"><p style="font-size:22px;font-weight:700;color:#1F3A5F">古典粒子（熱的、速度分布は等方的）</p><p style="font-size:24px"><span class="tex">x_j(t)=x_{j0}+v_j\tau\ \ \Rightarrow\ \ \sigma_j^2=\sigma_{j0}^2+\sigma_v^2\tau^2</span></p><p style="font-size:21px;color:#444444">どの方向も同じ速さで広がる → 丸くなるだけ</p></div><div style="border:1px solid #9DB8D9;padding:8px 16px;display:flex;flex-direction:column;gap:4px"><p style="font-size:22px;font-weight:700;color:#1F3A5F">量子（不確定性原理）</p><p style="font-size:24px"><span class="tex">\Delta p_j=\dfrac{\hbar}{2\sigma_{j0}}\ \ \Rightarrow\ \ \sigma_j=\sigma_{j0}\sqrt{1+(\omega_j\tau)^2}</span></p><p style="font-size:21px;color:#444444">きつく閉じ込めた y 方向ほど運動量の広がりが大きく、速く膨張 → <b>縦長へ反転</b></p></div><table class="compact" style="font-family:'Noto Sans JP', Arial, sans-serif;font-size:21px;color:#111111;background:#FFFFFF">
+<div style="display:flex;flex-direction:column;gap:12px;width:626px;flex:none"><div style="background:#FFFFFF;border:1px solid #9DB8D9;border-radius:0;padding:12px;display:flex"><img data-anim="img/anim_release.gif" src="img/html_release.png" alt="トラップ開放後の密度。上段は古典粒子で丸くなるだけ、下段は量子で縦長に反転する" style="width:600px;height:335px;object-fit:contain"></div>
+<div style="border-left:6px solid #C62828;background:#FDF3F2;padding:8px 14px;display:flex;flex-direction:column;gap:2px"><p style="font-size:20px;line-height:1.4"><b style="color:#C62828">先行研究：量子乱流だと反転しない</b><br>乱流状態の BEC をトラップから開放すると、縦横比が反転せず、形をほぼ保ったまま膨張する（実験）。渦の流れが異方的な膨張と競り合うという説明はあるが、仕組みは未解明 → 次の研究テーマ</p><p style="font-size:15px;color:#555555;line-height:1.35">Henn et al., PRL 103, 045301 (2009)；Caracanhas et al., JLTP 166, 49 (2012)；Tsuchitani &amp; Tsubota, JLTP 174, 223 (2014)</p></div></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px"><p style="font-size:23px;line-height:1.4"><b>意図：</b>同じ横長の雲でも、古典と量子で広がり方が逆になる（<span class="tex">\tau=t-2</span>）</p><div style="border:1px solid #9DB8D9;padding:8px 16px;display:flex;flex-direction:column;gap:4px"><p style="font-size:22px;font-weight:700;color:#1F3A5F">古典粒子（熱的、速度分布は等方的）</p><p style="font-size:24px"><span class="tex">x_j(t)=x_{j0}+v_j\tau\ \ \Rightarrow\ \ \sigma_j^2=\sigma_{j0}^2+\sigma_v^2\tau^2</span></p><p style="font-size:21px;color:#444444">どの方向も同じ速さで広がる → 丸くなるだけ</p></div><div style="border:1px solid #9DB8D9;padding:8px 16px;display:flex;flex-direction:column;gap:4px"><p style="font-size:22px;font-weight:700;color:#1F3A5F">量子（不確定性原理）</p><p style="font-size:24px"><span class="tex">\Delta p_j=\dfrac{\hbar}{2\sigma_{j0}}\ \ \Rightarrow\ \ \sigma_j=\sigma_{j0}\sqrt{1+(\omega_j\tau)^2}</span></p><p style="font-size:21px;color:#444444">きつく閉じ込めた y 方向ほど運動量の広がりが大きく、速く膨張 → <b>縦長へ反転</b></p></div><table class="compact" style="font-family:'Noto Sans JP', Arial, sans-serif;font-size:20px;color:#111111;background:#FFFFFF">
 <tr><th style="width:20%">t（ ）は解析解</th><th style="width:40%"><span class="tex">\sigma_x</span>（解析）</th><th style="width:40%"><span class="tex">\sigma_y</span>（解析）</th></tr>
 <tr><td>0</td><td>4.000（4.000）</td><td>0.500（0.500）</td></tr>
 <tr><td>6</td><td>4.031（4.031）</td><td>3.967（4.031）</td></tr>
@@ -284,7 +280,7 @@ for (int corr = 0; corr &lt; nCorr; ++corr)
 </div>
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">15 / 18</p>
-<aside class="notes">3つ目はトラップの開放です。x 方向にゆるく、y 方向にきつく閉じ込めた横長の雲を、t=2 で開放します。上段の古典粒子は速度分布が等方的なので、丸くなるだけで縦長にはなりません。下段の量子では、不確定性原理により、狭く閉じ込めていた y 方向ほど運動量の広がりが大きく、y 方向が速く膨張して縦長へ反転します。自由膨張の解析解と比べると、縦横比は解析どおり t=6 でほぼ1になりました。t=10 の σy が 2.9% 小さいのは、裾が計算領域の境界に達した影響です。</aside>
+<aside class="notes">3つ目はトラップの開放です。x 方向にゆるく、y 方向にきつく閉じ込めた横長の雲を、t=2 で開放します。上段の古典粒子は速度分布が等方的なので、丸くなるだけで縦長にはなりません。下段の量子では、不確定性原理により、狭く閉じ込めていた y 方向ほど運動量の広がりが大きく、y 方向が速く膨張して縦長へ反転します。自由膨張の解析解と比べると、縦横比は解析どおり t=6 でほぼ1になりました。t=10 の σy が 2.9% 小さいのは、裾が計算領域の境界に達した影響です。なお先行研究では、乱流状態のBECを開放すると、この縦横比の反転が起きず、形をほぼ保ったまま膨張することが実験で報告されています。渦の流れが異方的な膨張と競り合うという説明はありますが、仕組みはまだはっきりしておらず、これが次の研究テーマです。</aside>
 </section>
 
 <section class="slide" id="soliton" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:16px">
