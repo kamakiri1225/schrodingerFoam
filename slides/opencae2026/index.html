@@ -11,6 +11,8 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 .slide table{border-collapse:collapse;width:100%}
 .slide th,.slide td{border:1px solid #9DB8D9;padding:12px 18px;text-align:left}
 .slide th{background:#E3ECF7;color:#1F3A5F}
+.slide table.compact th,.slide table.compact td{padding:7px 18px}
+.slide::before{content:"";position:absolute;left:0;top:0;right:0;height:14px;background:#1F3A5F}
 .notes{display:none}
 #bar{position:fixed;left:0;right:0;bottom:0;height:40px;display:flex;align-items:center;justify-content:center;gap:16px;color:#666666;font-size:14px;background:rgba(11,16,32,.85)}
 #bar button{background:#1f2a44;color:#111111;border:1px solid #3a4766;border-radius:6px;padding:4px 14px;cursor:pointer;font-size:14px}
@@ -21,7 +23,7 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 </style></head><body>
 <div id="stage">
 <section class="slide" id="cover" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:center;gap:40px">
-<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム</p>
+<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム2026＠金沢</p>
 <h1 style="font-size:88px;font-weight:900;line-height:1.2;color:#1F3A5F">OpenFOAMを用いた<br>量子力学解析ソルバの開発</h1>
 <div style="width:360px;height:6px;background:#2F6FB0"></div>
 <p style="font-size:36px;color:#333333;line-height:1.5">シュレーディンガー方程式／グロス・ピタエフスキー方程式ソルバ<br><b>schrodingerFoam</b> の試作</p>
@@ -29,7 +31,7 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 </section>
 
 <section class="slide" id="intro" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
-<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム</p>
+<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム2026＠金沢</p>
 <p style="font-size:26px;font-weight:700;color:#2F6FB0">はじめに</p>
 <h2 style="color:#1F3A5F;border-bottom:3px solid #2F6FB0;padding-bottom:14px;font-size:64px;font-weight:700;line-height:1.2">OpenFOAMは「流体ソルバ」ではなく、偏微分方程式を有限体積法で解くフレームワーク</h2>
 <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:24px">
@@ -39,12 +41,12 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 <div style="background:#FFFFFF;border:1px solid #9DB8D9;border-radius:0;padding:32px;display:flex;flex-direction:column;gap:12px"><p style="font-size:28px;font-weight:700;color:#2F6FB0">金融</p><p style="font-size:26px">financialFoam</p></div>
 </div>
 <p style="font-size:36px;line-height:1.5">時間・空間の微分を含む<b>シュレーディンガー方程式</b>も、同じように OpenFOAM で解けるはず。</p>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">2 / 16</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">2 / 17</p>
 <aside class="notes">OpenFOAMは流体解析の印象が強いですが、応力、拡散、ポテンシャル流れ、金融までソルバとチュートリアルが同梱されています。大きくは、偏微分方程式を有限体積法で解くフレームワークと考えてよい。だとすれば、時間と空間の微分を含むシュレーディンガー方程式も解けるはず、というのが出発点です。</aside>
 </section>
 
 <section class="slide" id="classical" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:30px">
-<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム</p>
+<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム2026＠金沢</p>
 <p style="font-size:26px;font-weight:700;color:#2F6FB0">古典と量子の基礎方程式</p>
 <h2 style="color:#1F3A5F;border-bottom:3px solid #2F6FB0;padding-bottom:14px;font-size:56px;font-weight:700;line-height:1.2">シュレーディンガー方程式は「拡散方程式に <i>i</i> が付いた形」</h2>
 <table style="font-family:'Noto Sans JP', Arial, sans-serif;font-size:28px;color:#111111;background:#FFFFFF">
@@ -59,12 +61,12 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 <p style="font-size:28px;line-height:1.5">・古典との対応：位置と運動量の期待値 ⟨<i>x</i>⟩、⟨<i>p</i>⟩ はニュートンの運動方程式に従う（エーレンフェストの定理）。調和ポテンシャルでは厳密に一致（例題 2）</p>
 <p style="font-size:28px;line-height:1.5">・<i>ψ</i> = √<i>ρ</i> e<sup><i>iθ</i></sup> と置くと（マーデルング変換）、GP 方程式は連続の式と、量子圧力項の付いたオイラー方程式になる → 「量子流体」</p>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">3 / 16</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">3 / 17</p>
 <aside class="notes">古典力学や流体の基礎式と並べてみます。質点の古典力学はニュートンの運動方程式で、これは常微分方程式です。場の方程式では、熱伝導は拡散方程式で laplacianFoam、流体はナビエ・ストークス方程式で icoFoam などが解きます。シュレーディンガー方程式は、拡散方程式の時間微分に虚数単位 i が付いた形で、右辺はラプラシアンとポテンシャルの項です。GP 方程式は、これに非線形項 g|ψ|²ψ を加えたものです。古典との対応として、位置と運動量の期待値はニュートンの運動方程式に従い、これをエーレンフェストの定理と言います。調和ポテンシャルでは厳密に一致し、例題2で確かめます。また、ψ をルートρ かける e の iθ と置くマーデルング変換をすると、GP 方程式は連続の式と、量子圧力項の付いたオイラー方程式になります。これが量子流体と呼ばれる理由です。</aside>
 </section>
 
 <section class="slide" id="purpose" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
-<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム</p>
+<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム2026＠金沢</p>
 <p style="font-size:26px;font-weight:700;color:#2F6FB0">本研究の内容</p>
 <h2 style="color:#1F3A5F;border-bottom:3px solid #2F6FB0;padding-bottom:14px;font-size:64px;font-weight:700;line-height:1.2">laplacianFoam を改造して、新しいソルバ schrodingerFoam を開発</h2>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px">
@@ -73,12 +75,12 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 <div style="background:#FFFFFF;border:1px solid #9DB8D9;border-radius:0;padding:32px;display:flex;flex-direction:column;gap:10px"><h3 style="font-size:36px;font-weight:700;color:#1F3A5F">③ 時間の解き方</h3><p style="font-size:28px;line-height:1.5">実時間はノルムが保存されるクランク・ニコルソン法、基底状態は完全陰的な虚時間発展</p></div>
 <div style="background:#FFFFFF;border:1px solid #9DB8D9;border-radius:0;padding:32px;display:flex;flex-direction:column;gap:10px"><h3 style="font-size:36px;font-weight:700;color:#1F3A5F">④ チュートリアル</h3><p style="font-size:28px;line-height:1.5">トンネル効果・調和振動子・トラップ開放・ダークソリトンからの量子渦生成</p></div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">4 / 16</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">4 / 17</p>
 <aside class="notes">本研究では、拡散方程式ソルバ laplacianFoam を改造して、シュレーディンガー方程式とGP方程式を解く schrodingerFoam を新しく作りました。ポイントは4つ。方程式、複素数の扱い、時間の解き方、そしてチュートリアルの整備です。</aside>
 </section>
 
 <section class="slide" id="eqs" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:32px">
-<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム</p>
+<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム2026＠金沢</p>
 <p style="font-size:26px;font-weight:700;color:#2F6FB0">基礎方程式</p>
 <h2 style="color:#1F3A5F;border-bottom:3px solid #2F6FB0;padding-bottom:14px;font-size:64px;font-weight:700;line-height:1.2">GP 方程式で g = 0 とすれば、シュレーディンガー方程式</h2>
 <div style="background:#FFFFFF;border:1px solid #9DB8D9;border-radius:0;padding:32px;display:flex;flex-direction:column;gap:16px">
@@ -90,12 +92,12 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 <img src="img/eq_gp.png" alt="グロス・ピタエフスキー方程式" style="width:869px;height:103px;object-fit:contain">
 </div>
 <p style="font-size:32px;line-height:1.5">第 3 項 g|ψ|² が非線形項（粒子間相互作用）。<b>1 つのソルバの設定（g）で 2 つの方程式を扱う。</b></p>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">5 / 16</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">5 / 17</p>
 <aside class="notes">対象の方程式です。上が時間依存シュレーディンガー方程式。粒子間の相互作用を平均場で入れると、下のGP方程式になり、ボース・アインシュタイン凝縮体を記述します。第3項が非線形項で、g を 0 にすれば上の式に戻るので、1つのソルバで2つの方程式を扱えます。なお、同じ |ψ|² でも、シュレーディンガー方程式では存在確率、GP方程式では粒子数密度と意味が違う点に注意します。</aside>
 </section>
 
 <section class="slide" id="nondim" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
-<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム</p>
+<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム2026＠金沢</p>
 <p style="font-size:26px;font-weight:700;color:#2F6FB0">無次元化</p>
 <h2 style="color:#1F3A5F;border-bottom:3px solid #2F6FB0;padding-bottom:14px;font-size:64px;font-weight:700;line-height:1.2">背景密度と化学ポテンシャルで無次元化し、格子幅はヒーリング長で決める</h2>
 <div style="background:#FFFFFF;border:1px solid #9DB8D9;border-radius:0;padding:40px;display:flex;flex-direction:column;align-items:center">
@@ -107,12 +109,12 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 <div style="background:#FFFFFF;border:1px solid #9DB8D9;border-radius:0;padding:32px;display:flex;flex-direction:column;gap:8px"><p style="font-size:28px;color:#444444">格子幅の目安</p><p style="font-size:32px;font-weight:700">Δx = ξ / 4 ≈ 0.177</p></div>
 </div>
 <p style="font-size:30px;color:#444444">以下、右辺を与えるハミルトニアン演算子を H と書く。</p>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">6 / 16</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">6 / 17</p>
 <aside class="notes">背景密度と化学ポテンシャルで無次元化すると、D は 1/2、g は 1 の形になります。密度が回復する特徴長さ、ヒーリング長は約 0.707 で、格子幅はこれを基準に、例えば 4 分の 1 の 0.177 程度に設定します。</aside>
 </section>
 
 <section class="slide" id="split" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:36px">
-<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム</p>
+<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム2026＠金沢</p>
 <p style="font-size:26px;font-weight:700;color:#2F6FB0">実装 1　複素波動関数の分離</p>
 <h2 style="color:#1F3A5F;border-bottom:3px solid #2F6FB0;padding-bottom:14px;font-size:64px;font-weight:700;line-height:1.2">ψ = u + iv と分け、2 本の実数場の方程式にする</h2>
 <p style="font-size:32px;line-height:1.5">OpenFOAM には複素数の場（complexScalarField）はあるが、行列を解く陰的演算（fvm::）には対応していなかった。</p>
@@ -121,12 +123,12 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 <img src="img/eq_uv.png" alt="実部と虚部の2本の実方程式" style="width:1060px;height:93px;object-fit:contain">
 </div>
 <p style="font-size:32px;line-height:1.5"><b>H の係数はすべて実数</b> → 実部・虚部を比べるだけで、OpenFOAM の実スカラー場（Psire、Psiim）でそのまま扱える。</p>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">7 / 16</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">7 / 17</p>
 <aside class="notes">実装の1つ目。OpenFOAM には複素数の場はありますが、行列を解く陰的演算には対応していませんでした。そこで波動関数を実部 u と虚部 v に分けます。ハミルトニアンの係数はすべて実数なので、実部と虚部を比べると、u の時間変化は H v、v の時間変化は マイナス H u という2本の実方程式になり、既存の実スカラー場でそのまま扱えます。</aside>
 </section>
 
 <section class="slide" id="timestep" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:28px">
-<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム</p>
+<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム2026＠金沢</p>
 <p style="font-size:26px;font-weight:700;color:#2F6FB0">実装 2　ノルム保存の時間離散化</p>
 <h2 style="color:#1F3A5F;border-bottom:3px solid #2F6FB0;padding-bottom:14px;font-size:60px;font-weight:700;line-height:1.2">前進オイラーは必ず発散、クランク・ニコルソンは |G| = 1</h2>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
@@ -134,12 +136,12 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 <div style="background:#FFFFFF;border:1px solid #9DB8D9;border-radius:0;padding:24px;display:flex;flex-direction:column;gap:12px;align-items:center"><p style="font-size:28px;font-weight:700;color:#2F6FB0">クランク・ニコルソン法（θ = 1/2）</p><img src="img/eq_cn.png" alt="クランク・ニコルソン法の増幅率の絶対値は1" style="width:443px;height:84px;object-fit:contain"><p style="font-size:26px">分子と分母が複素共役 → 任意の Δt でノルム保存</p></div>
 </div>
 <img src="img/fig_amplification.png" alt="増幅率の比較：前進オイラー法は1を超えて増え続け、クランク・ニコルソン法は1のまま" style="width:1664px;height:330px;object-fit:contain">
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">8 / 16</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">8 / 17</p>
 <aside class="notes">実装の2つ目、時間の刻み方です。H の固有モードで考えると、1ステップの増幅率 G の大きさが1かどうかで、ノルム、つまり全確率が保たれるかが決まります。最初は laplacianFoam をそのまま使った前進オイラー法でしたが、増幅率は1より大きく、Δt をどれだけ小さくしても発散しました。右のグラフのように、ステップ数とともに振幅が増え続けます。クランク・ニコルソン法では分子と分母が複素共役になり、任意の Δt で大きさが1です。右辺に未知の値が含まれるので、各ステップで Picard 反復を回して収束させます。</aside>
 </section>
 
 <section class="slide" id="imag" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:28px">
-<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム</p>
+<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム2026＠金沢</p>
 <p style="font-size:26px;font-weight:700;color:#2F6FB0">実装 3　虚時間発展による基底状態</p>
 <h2 style="color:#1F3A5F;border-bottom:3px solid #2F6FB0;padding-bottom:14px;font-size:60px;font-weight:700;line-height:1.2">t = −iτ と置くと、基底状態だけが残る</h2>
 <div style="background:#FFFFFF;border:1px solid #9DB8D9;border-radius:0;padding:28px;display:flex;flex-direction:column;gap:12px;align-items:center">
@@ -154,28 +156,73 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 <p style="font-size:28px;line-height:1.5">収束すると Hψ = μψ（定常 GP 方程式）</p>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">9 / 16</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">9 / 17</p>
 <aside class="notes">実装の3つ目は、初期状態づくりです。基底状態でない初期条件で実時間発展を始めると、余分なエネルギーが音波として混ざり、見たい現象が乱れます。実時間発展では各成分の位相が回るだけなので、基底状態を取り出せません。そこで t をマイナス i τ と置くと、励起成分が指数関数的に減衰し、基底状態だけが残ります。ただし全体の大きさも変わるので、μ を引いてノルムを保ちます。μ はGP方程式では化学ポテンシャル、g が 0 では基底エネルギーです。この式は拡散方程式と同じ形なので、laplacianFoam 由来の陰的演算でそのまま解け、各ステップで規格化し直します。</aside>
 </section>
 
-<section class="slide" id="cases" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:36px">
-<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム</p>
+<section class="slide" id="source" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 150px;display:flex;flex-direction:column;gap:18px">
+<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム2026＠金沢</p>
+<p style="font-size:26px;font-weight:700;color:#2F6FB0">ソースコード（schrodingerFoam.C 抜粋）</p>
+<h2 style="color:#1F3A5F;border-bottom:3px solid #2F6FB0;padding-bottom:12px;font-size:50px;font-weight:700;line-height:1.2">laplacianFoam の 1 式を、2 本の実数場の式に書き換えた</h2>
+<div style="border:2px solid #2F6FB0;background:#F5F8FC;padding:10px 20px;display:flex;align-items:center;gap:36px">
+<div style="display:flex;flex-direction:column;gap:2px;flex:none"><p style="font-size:22px;font-weight:700;color:#2F6FB0">解く式（シュレーディンガー／GP）</p>
+<p style="font-family:'Times New Roman','Noto Serif JP',serif;font-size:36px;color:#111111;white-space:nowrap"><i>i</i> ∂<i>ψ</i>/∂<i>t</i> = −<i>D</i>∇²<i>ψ</i> + <i>W</i><i>ψ</i>,　<i>W</i> = <i>V</i><sub>ext</sub> + <i>g</i>|<i>ψ</i>|²</p></div>
+<p style="font-size:23px;line-height:1.45"><i>W</i>：ポテンシャル ＝ 外部ポテンシャル <i>V</i><sub>ext</sub>（障壁・トラップ）＋ 粒子間相互作用 <i>g</i>|<i>ψ</i>|²。コードでは場 <b>W</b> にまとめ、虚時間は <b>fvm::SuSp(W − mu, ψ)</b> で陰的に足す</p>
+</div>
+<div style="display:grid;grid-template-columns:0.92fr 1.08fr;gap:28px;align-items:start">
+<div style="display:flex;flex-direction:column;gap:8px">
+<p style="font-size:25px;font-weight:700;color:#2F6FB0">元の laplacianFoam（拡散方程式）</p>
+<p style="font-family:'Times New Roman','Noto Serif JP',serif;font-size:28px;color:#1F3A5F;padding:0 4px">∂<i>T</i>/∂<i>t</i> = ∇·(<i>D</i><sub>T</sub>∇<i>T</i>)</p>
+<pre style="margin:0;background:#F5F8FC;border:1px solid #9DB8D9;padding:10px 16px;font-family:'Consolas','DejaVu Sans Mono',monospace;font-size:20px;line-height:1.32;color:#111111;white-space:pre"><span style="color:#1F5FBF;font-weight:700">fvm::ddt</span>(T) - <span style="color:#1F5FBF;font-weight:700">fvm::laplacian</span>(DT, T) == fvOptions(T)</pre>
+<p style="font-size:25px;font-weight:700;color:#2F6FB0">schrodingerFoam：虚時間（mode imaginaryTime）</p>
+<p style="font-family:'Times New Roman','Noto Serif JP',serif;font-size:28px;color:#1F3A5F;padding:0 4px">∂<i>u</i>/∂<i>τ</i> = <i>D</i>∇²<i>u</i> − (<i>W</i> − <i>μ</i>)<i>u</i>　（<i>v</i> も同じ）</p>
+<pre style="margin:0;background:#F5F8FC;border:1px solid #9DB8D9;padding:10px 16px;font-family:'Consolas','DejaVu Sans Mono',monospace;font-size:20px;line-height:1.32;color:#111111;white-space:pre"><span style="color:#2E7D32">// 虚時間: 拡散方程式と同じ形 → 完全陰的</span>
+volScalarField W(Vnow + g*(sqr(Psire) + sqr(Psiim)));
+solve(<span style="color:#1F5FBF;font-weight:700">fvm::ddt</span>(Psire) - <span style="color:#1F5FBF;font-weight:700">fvm::laplacian</span>(D, Psire)
+    + <span style="color:#1F5FBF;font-weight:700">fvm::SuSp</span>(W - mu, Psire));
+solve(<span style="color:#1F5FBF;font-weight:700">fvm::ddt</span>(Psiim) - <span style="color:#1F5FBF;font-weight:700">fvm::laplacian</span>(D, Psiim)
+    + <span style="color:#1F5FBF;font-weight:700">fvm::SuSp</span>(W - mu, Psiim));
+<span style="color:#2E7D32">// 各ステップ後に ∫|ψ|² を規格化</span></pre>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<p style="font-size:25px;font-weight:700;color:#2F6FB0">schrodingerFoam：実時間（mode realTime）</p>
+<p style="font-family:'Times New Roman','Noto Serif JP',serif;font-size:28px;color:#1F3A5F;padding:0 4px"><i>u</i><sup><i>n</i>+1</sup> = <i>u</i><sup><i>n</i></sup> + (Δ<i>t</i>/2)(<i>Hv</i><sup><i>n</i>+1</sup> + <i>Hv</i><sup><i>n</i></sup>)　 <i>v</i><sup><i>n</i>+1</sup> = <i>v</i><sup><i>n</i></sup> − (Δ<i>t</i>/2)(<i>Hu</i><sup><i>n</i>+1</sup> + <i>Hu</i><sup><i>n</i></sup>)</p>
+<pre style="margin:0;background:#F5F8FC;border:1px solid #9DB8D9;padding:10px 16px;font-family:'Consolas','DejaVu Sans Mono',monospace;font-size:20px;line-height:1.32;color:#111111;white-space:pre"><span style="color:#2E7D32">// 実時間: クランク・ニコルソン + Picard 反復</span>
+for (int corr = 0; corr &lt; nCorr; ++corr)
+{
+    volScalarField W(Vnow + g*(sqr(Psire) + sqr(Psiim)) - muEff);
+    const volScalarField Hv(-D*<span style="color:#1F5FBF;font-weight:700">fvc::laplacian</span>(Psiim) + W*Psiim);
+    Psire = Psire0 + 0.5*dt*(Hv + Hv0);   <span style="color:#2E7D32">// 新旧の平均</span>
+
+    W = Vnow + g*(sqr(Psire) + sqr(Psiim)) - muEff;
+    const volScalarField Hu(-D*<span style="color:#1F5FBF;font-weight:700">fvc::laplacian</span>(Psire) + W*Psire);
+    Psiim = Psiim0 - 0.5*dt*(Hu + Hu0);
+}</pre>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">10 / 17</p>
+<aside class="notes">まず右上が解く式です。W はポテンシャルで、障壁やトラップの外部ポテンシャル V_ext と、粒子間相互作用 g|ψ|² の和です。コードでは W を1つの場にまとめています。実際に書き換えたソースコードの一部です。左上が元の laplacianFoam で、fvm::ddt と fvm::laplacian で拡散方程式を陰的に解く1式だけです。虚時間モードでは、この式を実部 Psire と虚部 Psiim の2本にし、ポテンシャルと非線形項 W から μ を引いた項を fvm::SuSp で足しています。形は拡散方程式と同じなので、完全陰的にそのまま解けます。右の実時間モードでは、u の時間変化は H v、v の時間変化はマイナス H u の2本を、クランク・ニコルソン法、つまり新旧の値の平均で更新します。右辺に未知の値が入るので、Picard 反復を nCorrectors 回まわしています。2つのモードは constant/gpProperties の mode で切り替えます。</aside>
+</section>
+
+<section class="slide" id="cases" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:22px">
+<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム2026＠金沢</p>
 <p style="font-size:26px;font-weight:700;color:#2F6FB0">チュートリアル計算例</p>
 <h2 style="color:#1F3A5F;border-bottom:3px solid #2F6FB0;padding-bottom:14px;font-size:60px;font-weight:700;line-height:1.2">「とりあえず動く」4 つの例題を用意した</h2>
-<table style="font-family:'Noto Sans JP', Arial, sans-serif;font-size:30px;color:#111111;background:#FFFFFF">
+<table class="compact" style="font-family:'Noto Sans JP', Arial, sans-serif;font-size:25px;color:#111111;background:#FFFFFF">
 <tr><th style="width:30%">例題</th><th style="width:16%">領域</th><th style="width:20%">セル（Δx）</th><th style="width:10%">Δt</th><th style="width:14%">終了時刻</th><th style="width:10%">g</th></tr>
 <tr><td>量子トンネル（1D）</td><td>[−40, 40]</td><td>400（0.2）</td><td>0.01</td><td>22</td><td>0</td></tr>
 <tr><td>調和振動子（1D）</td><td>[−12, 12]</td><td>240（0.1）</td><td>0.005</td><td>12.566</td><td>0</td></tr>
 <tr><td>トラップ開放（2D）</td><td>[−20, 20]²</td><td>200²（0.2）</td><td>0.005</td><td>10</td><td>0</td></tr>
 <tr><td>ダークソリトン（2D）</td><td>[−16, 16]²</td><td>128²（0.25）</td><td>0.005</td><td>150</td><td>1</td></tr>
 </table>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px"><div style="min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;border:1px solid #9DB8D9;padding:6px"><img src="img/anim_tunneling.gif" alt="量子トンネル（1D）のアニメーション" style="width:100%;height:205px;object-fit:contain"><p style="font-size:22px;color:#1F3A5F;font-weight:700">量子トンネル（1D）</p></div><div style="min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;border:1px solid #9DB8D9;padding:6px"><img src="img/anim_harmonic.gif" alt="調和振動子（1D）のアニメーション" style="width:100%;height:205px;object-fit:contain"><p style="font-size:22px;color:#1F3A5F;font-weight:700">調和振動子（1D）</p></div><div style="min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;border:1px solid #9DB8D9;padding:6px"><img src="img/anim_release.gif" alt="トラップ開放（2D）のアニメーション" style="width:100%;height:205px;object-fit:contain"><p style="font-size:22px;color:#1F3A5F;font-weight:700">トラップ開放（2D）</p></div><div style="min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;border:1px solid #9DB8D9;padding:6px"><img src="img/anim_soliton.gif" alt="ダークソリトン（2D）のアニメーション" style="width:100%;height:205px;object-fit:contain"><p style="font-size:22px;color:#1F3A5F;font-weight:700">ダークソリトン（2D）</p></div></div>
 <p style="font-size:32px;line-height:1.5">線形の例題（g = 0）では、<b>ノルムの相対変動は計算期間を通して 10⁻⁷ 以下</b>。</p>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">10 / 16</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">11 / 17</p>
 <aside class="notes">オープンソースは、ソルバだけ用意しても使われません。そこで、とりあえず動く例題を4つ用意しました。量子トンネル、調和振動子、トラップ開放の3つは線形のシュレーディンガー方程式、ダークソリトンは非線形のGP方程式です。線形の例題では、ノルムの相対変動は計算期間を通して 10 のマイナス7乗以下に保たれました。</aside>
 </section>
 
 <section class="slide" id="tunnel" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:28px">
-<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム</p>
+<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム2026＠金沢</p>
 <p style="font-size:26px;font-weight:700;color:#2F6FB0">例題 1　量子トンネル効果（1 次元）</p>
 <h2 style="color:#1F3A5F;border-bottom:3px solid #2F6FB0;padding-bottom:14px;font-size:56px;font-weight:700;line-height:1.2">古典的には越えられない障壁を、波束の一部が透過する</h2>
 <p style="font-size:28px;line-height:1.5">幅 a = 0.8、高さ V₀ = 2 の矩形障壁に、ガウス波束（x₀ = −15、σ = 2、k₀ = 1.5）を入射。運動エネルギー E = 1.125 &lt; V₀</p>
@@ -186,12 +233,12 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 <p style="flex:1;font-size:32px;font-weight:700;background:#FFFFFF;color:#111111;border:2px solid #2F6FB0;border-radius:0;padding:20px 28px">透過率（t = 22）：計算 0.380</p>
 <p style="flex:1;font-size:32px;font-weight:700;background:#FFFFFF;border:2px solid #2F6FB0;border-radius:0;padding:20px 28px">理論（波数分布で重み付け）：0.383</p>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">11 / 16</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">12 / 17</p>
 <aside class="notes">1つ目の例題、量子トンネル効果です。原点に矩形の障壁を置き、左からガウス波束を入射させます。波束のエネルギーは 1.125 で、障壁の高さ 2 より低い。古典的には全部はね返るはずですが、障壁に当たった波束は反射と透過に分かれ、t=16 にははっきり分裂します。障壁の右側の確率を積分した透過率は 0.380。平面波の透過係数を初期波束の波数分布で重み付け平均した理論値 0.383 とよく一致しました。</aside>
 </section>
 
 <section class="slide" id="harmonic" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:28px">
-<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム</p>
+<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム2026＠金沢</p>
 <p style="font-size:26px;font-weight:700;color:#2F6FB0">例題 2　調和振動子ポテンシャル（1 次元）</p>
 <h2 style="color:#1F3A5F;border-bottom:3px solid #2F6FB0;padding-bottom:14px;font-size:56px;font-weight:700;line-height:1.2">コヒーレント状態は、形を保ったまま底を中心に往復する</h2>
 <p style="font-size:28px;line-height:1.5">V(x) = ½ ω² x²（ω = 1）。基底状態のガウス関数を x₀ = 4 だけずらして初期値に。</p>
@@ -199,12 +246,12 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 <img data-anim="img/anim_harmonic.gif" src="img/html_harmonic.png" alt="調和ポテンシャル中のコヒーレント状態。波束が形を保って往復する" style="width:1500px;height:487px;object-fit:contain">
 </div>
 <p style="font-size:28px;line-height:1.5;color:#444444">安定なつり合い点のまわりをテイラー展開すると、なめらかなポテンシャルは放物線型（ω² = V″(xₑ)）で近似できる。</p>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">12 / 16</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">13 / 17</p>
 <aside class="notes">2つ目は調和振動子です。放物線型のポテンシャルは、なめらかなポテンシャルを安定なつり合い点まわりでテイラー展開したときの主要項で、小さな振動はこれで近似できます。基底状態を 4 だけずらしたコヒーレント状態を初期値にすると、波束は形をほぼ保ったまま、ポテンシャルの底を中心に周期的に往復します。</aside>
 </section>
 
 <section class="slide" id="release" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:24px">
-<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム</p>
+<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム2026＠金沢</p>
 <p style="font-size:26px;font-weight:700;color:#2F6FB0">例題 3　トラップの開放（2 次元）</p>
 <h2 style="color:#1F3A5F;border-bottom:3px solid #2F6FB0;padding-bottom:14px;font-size:52px;font-weight:700;line-height:1.2">量子の雲は、縦横比が反転する（不確定性原理）</h2>
 <div style="display:flex;gap:32px;align-items:center">
@@ -221,12 +268,12 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 <p style="font-size:24px;color:#444444">t = 6 で縦横比 ≈ 1（解析解の反転時刻）。t = 10 の σy は境界の影響で −2.9 %</p>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">13 / 16</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">14 / 17</p>
 <aside class="notes">3つ目はトラップの開放です。x 方向にゆるく、y 方向にきつく閉じ込めた横長の雲を、t=2 で開放します。上段の古典粒子は速度分布が等方的なので、丸くなるだけで縦長にはなりません。下段の量子では、不確定性原理により、狭く閉じ込めていた y 方向ほど運動量の広がりが大きく、y 方向が速く膨張して縦長へ反転します。自由膨張の解析解と比べると、縦横比は解析どおり t=6 でほぼ1になりました。t=10 の σy が 2.9% 小さいのは、裾が計算領域の境界に達した影響です。</aside>
 </section>
 
 <section class="slide" id="soliton" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:24px">
-<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム</p>
+<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム2026＠金沢</p>
 <p style="font-size:26px;font-weight:700;color:#2F6FB0">例題 4　ダークソリトンからの量子渦生成（2 次元、GP 方程式 g = 1）</p>
 <h2 style="color:#1F3A5F;border-bottom:3px solid #2F6FB0;padding-bottom:14px;font-size:52px;font-weight:700;line-height:1.2">帯状のくぼみが崩れて、位相が 2π 巻く量子渦が生まれる</h2>
 <p style="font-size:28px;line-height:1.5">2 本のダークソリトン ψ₀ = tanh((x+x₀)/w) tanh((x−x₀)/w)（w = 1、x₀ = 6）＋ホワイトノイズ（振幅 10⁻²）、周期境界</p>
@@ -234,12 +281,12 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 <img data-anim="img/anim_soliton.gif" src="img/html_soliton.png" alt="ダークソリトンの崩壊。上段が密度、下段が位相。点状のくぼみのまわりで位相が2π巻く" style="width:1500px;height:487px;object-fit:contain">
 </div>
 <p style="font-size:32px;font-weight:700">巻き数 ±1 の量子渦：t = 60 で 12 個、t = 100 で 8 個</p>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">14 / 16</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">15 / 17</p>
 <aside class="notes">4つ目は、非線形のGP方程式の例です。量子流体に特有の現象として、ダークソリトンの崩壊による量子渦の生成を扱いました。2本のまっすぐなダークソリトンに小さなノイズを加えて発展させると、帯状の低密度領域が曲がり、点状のくぼみに分裂します。下段の位相を見ると、点のまわりを一周すると位相が 2π 変わっていて、これが量子渦です。各セルを囲む位相差から数えると、t=60 で12個、t=100 で8個の渦がありました。</aside>
 </section>
 
 <section class="slide" id="future" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:36px">
-<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム</p>
+<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム2026＠金沢</p>
 <p style="font-size:26px;font-weight:700;color:#2F6FB0">今後の展開</p>
 <h2 style="color:#1F3A5F;border-bottom:3px solid #2F6FB0;padding-bottom:14px;font-size:60px;font-weight:700;line-height:1.2">同じプラットフォームで、量子流体と古典流体を扱う</h2>
 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px">
@@ -247,12 +294,12 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 <div style="background:#FFFFFF;border:1px solid #9DB8D9;border-radius:0;padding:32px;display:flex;flex-direction:column;gap:12px"><h3 style="font-size:34px;font-weight:700;color:#1F3A5F">量子流体と古典流体の連成</h3><p style="font-size:28px;line-height:1.5">有限温度では常流体成分も関わる。力の受け渡しを実装すれば、OpenFOAM 内で完結できる</p></div>
 <div style="background:#FFFFFF;border:1px solid #9DB8D9;border-radius:0;padding:32px;display:flex;flex-direction:column;gap:12px"><h3 style="font-size:34px;font-weight:700;color:#1F3A5F">KS-DFT への展開</h3><p style="font-size:28px;line-height:1.5">コーン・シャム方程式も「ラプラシアン＋ポテンシャル」の形。自己無撞着の反復が要るため、別ソルバ ksdftFoam（水素・ヘリウム原子）として試作中</p></div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">15 / 16</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">16 / 17</p>
 <aside class="notes">今後の展開です。GP方程式はBECという量子流体を記述するので、通常の流体と量子流体を同じプラットフォームで比べられます。有限温度では常流体成分も関わり、力の受け渡しを実装すれば、連成も OpenFOAM の中で完結できます。また、ソルバの作り方が分かれば、ほかの量子力学の方程式も実装できます。コーン・シャム密度汎関数法も同じ形ですが、密度に依存するポテンシャルのため自己無撞着の反復が必要で、解き方がかなり違うので、ksdftFoam という別ソルバとして試作しています。</aside>
 </section>
 
 <section class="slide" id="summary" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
-<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム</p>
+<p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム2026＠金沢</p>
 <p style="font-size:26px;font-weight:700;color:#2F6FB0">まとめ</p>
 <h2 style="color:#1F3A5F;border-bottom:3px solid #2F6FB0;padding-bottom:14px;font-size:60px;font-weight:700;line-height:1.2;color:#111111">laplacianFoam を改造し、schrodingerFoam を開発した</h2>
 <div style="display:flex;flex-direction:column;gap:22px">
@@ -262,7 +309,7 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 <p style="font-size:32px;line-height:1.5;color:#111111">④ トンネル効果・調和振動子・トラップ開放・量子渦の 4 例題をチュートリアルとして整備</p>
 </div>
 <p style="font-size:32px;font-weight:700;color:#C62828">今後：GP 方程式による量子流体（量子渦の生成・崩壊など）の計算を進める</p>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">16 / 16</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">17 / 17</p>
 <aside class="notes">まとめです。laplacianFoam を改造して schrodingerFoam を開発しました。複素数は実部と虚部に分けて既存のオペレータを流用し、実時間はクランク・ニコルソン法でノルムを保存、基底状態は虚時間発展で完全陰的に作り、1つのソルバのモード切替にまとめました。4つの例題をチュートリアルとして整備しています。今後は、GP方程式による量子流体の計算を進めていきます。ご清聴ありがとうございました。</aside>
 </section>
 
