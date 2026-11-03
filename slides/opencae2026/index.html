@@ -15,6 +15,7 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 .slide::before{content:"";position:absolute;left:0;top:0;right:0;height:14px;background:#1F3A5F}
 .notes{display:none}
 #bar{position:fixed;left:0;right:0;bottom:0;height:40px;display:flex;align-items:center;justify-content:center;gap:16px;color:#666666;font-size:14px;background:rgba(11,16,32,.85)}
+#bar a#pdf{background:#2F6FB0;color:#FFFFFF;border:1px solid #2F6FB0;border-radius:6px;padding:4px 14px;font-size:14px;text-decoration:none}
 #bar button{background:#1f2a44;color:#111111;border:1px solid #3a4766;border-radius:6px;padding:4px 14px;cursor:pointer;font-size:14px}
 #notes{position:fixed;left:0;right:0;bottom:40px;max-height:30%;overflow:auto;background:#FFFFFF;color:#111111;padding:12px 20px;font-size:16px;line-height:1.6;display:none;border-top:3px solid #E8552D}
 .animwrap{position:relative}
@@ -343,7 +344,7 @@ for (int corr = 0; corr &lt; nCorr; ++corr)
 
 </div>
 <div id="notes"></div>
-<div id="bar"><button id="prev">◀ 前へ</button><span id="pg"></span><button id="next">次へ ▶</button><button id="nt">原稿（N）</button><button id="fs">全画面（F）</button><button id="an">アニメ（A）</button></div>
+<div id="bar"><button id="prev">◀ 前へ</button><span id="pg"></span><button id="next">次へ ▶</button><button id="nt">原稿（N）</button><button id="fs">全画面（F）</button><button id="an">アニメ（A）</button><a id="pdf" href="opencae2026_slides.pdf" download="opencae2026_slides.pdf">PDF ダウンロード</a></div>
 <script>
 document.querySelectorAll(".tex").forEach(e=>{try{katex.render(e.textContent,e,{throwOnError:false})}catch(_){}});
 const S=[...document.querySelectorAll('.slide')],st=document.getElementById('stage'),pg=document.getElementById('pg'),nb=document.getElementById('notes');
