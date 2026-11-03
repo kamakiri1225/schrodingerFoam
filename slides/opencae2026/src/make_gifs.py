@@ -171,13 +171,16 @@ def anim_soliton(ms=220):
     rmax = max((np.abs(p) ** 2).max() for _, _, _, p in data)
     frames = []
     for t, xs, ys, psi in data:
+        # remove the global phase rotation exp(-i mu t) (~2 rad per frame -> whole-map flicker);
+        # only the relative phase (vortex windings) is physical
+        psi = psi * np.exp(-1j * np.angle(psi.sum()))
         ext = [xs.min(), xs.max(), ys.min(), ys.max()]
         fig, axes = plt.subplots(1, 2, figsize=(12, 6.3))
         im0 = axes[0].imshow(np.abs(psi) ** 2, origin="lower", cmap="jet", vmin=0, vmax=rmax, extent=ext,
                              interpolation="bilinear")
         im1 = axes[1].imshow(np.angle(psi), origin="lower", cmap="twilight_shifted", vmin=-np.pi, vmax=np.pi,
                              extent=ext, interpolation="nearest")
-        axes[0].set_title(r"密度 $|\psi|^2$"); axes[1].set_title(r"位相 arg $\psi$")
+        axes[0].set_title(r"密度 $|\psi|^2$"); axes[1].set_title(r"位相 arg $\psi$（全体の回転を除去）")
         for ax in axes:
             ax.set_xticks([-8, 0, 8]); ax.set_yticks([-8, 0, 8]); ax.set_xlabel("x")
         axes[0].set_ylabel("y")
