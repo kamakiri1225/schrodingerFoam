@@ -358,9 +358,12 @@ st.addEventListener('click',e=>go(e.clientX>innerWidth/2?i+1:i-1));
 document.getElementById('prev').onclick=()=>go(i-1);document.getElementById('next').onclick=()=>go(i+1);
 document.getElementById('nt').onclick=()=>{showN=!showN;go(i)};document.getElementById('fs').onclick=()=>{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()};
 const A=[...document.querySelectorAll('img[data-anim]')].map(im=>{im.dataset.still=im.getAttribute('src');const b=document.createElement('button');b.className='animbtn';b.textContent='アニメーション';im.closest('.slide').appendChild(b);const o={im,b,on:false};b.addEventListener('click',e=>{e.stopPropagation();setAnim(o,!o.on)});return o});
-function setAnim(o,on){o.on=on;o.im.src=on?o.im.dataset.anim+'?t='+Date.now():o.im.dataset.still;o.b.textContent=on?'静止画に戻す':'アニメーション';o.b.classList.toggle('on',on)}
+const blobs={};function loadGif(u){if(!blobs[u])blobs[u]=fetch(u).then(r=>r.ok?r.blob():null).catch(()=>null);return blobs[u]}
+function animSrc(o){if(o.url){URL.revokeObjectURL(o.url);o.url=null}loadGif(o.im.dataset.anim).then(b=>{if(!o.on)return;if(b){o.url=URL.createObjectURL(b);o.im.src=o.url}else o.im.src=o.im.dataset.anim+'?t='+Date.now()})}
+function setAnim(o,on){o.on=on;if(on)animSrc(o);else{if(o.url){URL.revokeObjectURL(o.url);o.url=null}o.im.src=o.im.dataset.still}o.b.textContent=on?'静止画に戻す':'アニメーション';o.b.classList.toggle('on',on)}
 function toggleAnim(){A.filter(o=>S[i].contains(o.im)).forEach(o=>setAnim(o,!o.on))}
-const go0=go;go=function(k){A.forEach(o=>{if(o.on)setAnim(o,false)});go0(k)};
+A.forEach(o=>loadGif(o.im.dataset.anim));
+let cur=-1;const go0=go;go=function(k){go0(k);if(i===cur)return;cur=i;A.forEach(o=>setAnim(o,S[i].contains(o.im)))};
 addEventListener('keydown',e=>{if(e.key==='a'||e.key==='A')toggleAnim()});
 document.getElementById('an').onclick=toggleAnim;
 fit();go(i);
