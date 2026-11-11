@@ -113,7 +113,7 @@ def write_gif(frames, name, ms, colors=128):
 def anim_1d(case, xr, nx, vfun, xlim, ylim, vmax, title, name, step=1, ms=100, barrier=False):
     dx = (xr[1] - xr[0]) / nx
     x = xr[0] + dx * (np.arange(nx) + 0.5)
-    frames = []
+    frames = []; prev_xl = None
     for t, n in time_dirs(case)[::step]:
         if t == 0:      # 0/ holds the #codeStream initial condition, not data
             continue
@@ -129,6 +129,25 @@ def anim_1d(case, xr, nx, vfun, xlim, ylim, vmax, title, name, step=1, ms=100, b
         ax.set_title(f"{title}    t = {t:4.1f}", loc="left")
         if barrier:
             R = p[x < -0.4].sum() * dx; T = p[x > 0.4].sum() * dx
+            # arrows that follow the wave packets: incident (moving right) before the hit,
+            # reflected (moving left) and transmitted (moving right) after it
+            L = x < -0.4; xl = (x[L] * p[L]).sum() * dx / max(R, 1e-12)
+            moving_right = prev_xl is not None and xl > prev_xl + 1e-3
+            prev_xl = xl
+            def arrow(xc, direction, label):
+                y = min(p[np.abs(x - xc) < 6].max() + 0.05, ylim[1] * 0.80)
+                x0, x1 = (xc - 5, xc + 5) if direction > 0 else (xc + 5, xc - 5)
+                ax.annotate("", xy=(x1, y), xytext=(x0, y),
+                            arrowprops=dict(arrowstyle="-|>,head_width=0.5,head_length=0.9", color="#c62828", lw=3.5))
+                ax.text(xc, y + 0.025, label, ha="center", va="bottom", fontsize=20, color="#c62828", fontweight="bold")
+            if R > 0.5 and (moving_right or t < 8) and xl < -4:
+                arrow(xl, +1, "入射波")
+            elif t > 11.5 and xl < -3:
+                arrow(xl, -1, "反射波")
+            if t > 11.5 and T > 0.05:
+                Rg = x > 0.4; xr_ = (x[Rg] * p[Rg]).sum() * dx / T
+                if xr_ > 3:
+                    arrow(xr_, +1, "透過波")
             ax.text(0.98, 0.93, f"反射 {R:.3f}   透過 {T:.3f}", transform=ax.transAxes, ha="right", va="top",
                     fontsize=18, bbox=dict(fc="white", ec="#cccccc"))
         fig.tight_layout()
@@ -165,8 +184,9 @@ def anim_release(step=2, ms=90):
 
 
 # ---------------------------------------------------------------- dark soliton (density + phase)
-def anim_soliton(ms=220):
-    vdir, series = load_series("04_darkSoliton_whiteNoise")
+def anim_soliton(ms=220, case="04_3_darkSoliton_fromImagTime_realTime"):
+    # initial state: phase-locked imaginary time (04_2) + white noise 1e-2; the earlier analytic-tanh start is 04_darkSoliton_whiteNoise
+    vdir, series = load_series(case)
     data = [(t, *read_psi_2d(vdir, series[t])) for t in sorted(series) if t <= 120]
     rmax = max((np.abs(p) ** 2).max() for _, _, _, p in data)
     frames = []
@@ -192,10 +212,47 @@ def anim_soliton(ms=220):
         frames.append(grab(fig))
     write_gif([f.resize((1000, round(f.height * 1000 / f.width)), Image.LANCZOS) for f in frames],
               "anim_soliton.gif", ms, colors=96)
+    k = min(range(len(data)), key=lambda i: abs(data[i][0] - 60))     # still image for the slide: t = 60
+    frames[k].resize((1000, round(frames[k].height * 1000 / frames[k].width)), Image.LANCZOS).save(os.path.join(OUT, "html_soliton.png"))
+
+
+# ---------------------------------------------------------------- dark soliton: initial state by phase-locked imaginary time
+def anim_soliton_imag(case="04_2_darkSoliton_imagTime_fixPhase", ms=260):
+    """density relaxing from a flat start (phase pi between the solitons) to the tanh profile; 128x128, [-16,16]^2"""
+    n, L = 128, 16.0
+    dx = 2 * L / n; x = -L + dx * (np.arange(n) + 0.5)
+    ana = np.tanh(x + 6) ** 2 * np.tanh(x - 6) ** 2
+    frames = []
+    for t, name in time_dirs(case):
+        if t == 0:
+            rho = np.ones((n, n))                      # 0/ holds the codeStream start: |psi| = 1 everywhere
+        else:
+            d = os.path.join(RUN, case, name)
+            re_ = read_internal(os.path.join(d, "Psire")); im_ = read_internal(os.path.join(d, "Psiim"))
+            re_ = np.asarray(re_) * np.ones(n * n); im_ = np.asarray(im_) * np.ones(n * n)
+            rho = (re_ ** 2 + im_ ** 2).reshape(n, n)
+        fig, (a0, a1) = plt.subplots(1, 2, figsize=(12, 5.0), gridspec_kw=dict(width_ratios=[1, 1.35]))
+        im = a0.imshow(rho, origin="lower", cmap="jet", vmin=0, vmax=1.05, extent=[-L, L, -L, L], interpolation="bilinear")
+        a0.set_title(r"密度 $|\psi|^2$"); a0.set_xticks([-8, 0, 8]); a0.set_yticks([-8, 0, 8]); a0.set_xlabel("x"); a0.set_ylabel("y")
+        fig.colorbar(im, ax=a0, fraction=0.046, pad=0.03)
+        a1.plot(x, ana, color=RED, ls="--", lw=2.4, label="厳密解 tanh²")
+        a1.plot(x, rho.mean(axis=0), color=BLUE, lw=2.8, label="虚時間発展")
+        a1.set_xlim(-L, L); a1.set_ylim(-0.02, 1.15); a1.set_xlabel("x"); a1.set_ylabel(r"$|\psi|^2$（y 方向に平均）")
+        a1.legend(loc="lower right", fontsize=15, frameon=True); a1.grid(alpha=0.3)
+        for xs in (-6, 6):
+            a1.text(xs, 1.07, "位相 π のずれ", ha="center", fontsize=14, color="#555")
+        fig.suptitle(f"虚時間発展（位相を固定）でダークソリトンの初期状態を作る    虚時間 τ = {t:4.2f}", fontsize=19, y=0.98)
+        fig.tight_layout(rect=(0, 0.02, 1, 0.93))
+        frames.append(grab(fig))
+    write_gif([f.resize((1000, round(f.height * 1000 / f.width)), Image.LANCZOS) for f in frames],
+              "anim_soliton_imag.gif", ms, colors=96)
+    frames[-1].save(os.path.join(OUT, "fig_soliton_imag.png"))
 
 
 if __name__ == "__main__":
     import sys
+    if sys.argv[1:] == ["soliton_imag"]:
+        anim_soliton_imag(); sys.exit()
     if sys.argv[1:] == ["soliton"]:
         anim_soliton(); sys.exit()
     anim_1d("00_1b_tunneling_visible", (-40, 40), 400, lambda x: np.where(np.abs(x) < 0.4, 2.0, 0.0),
