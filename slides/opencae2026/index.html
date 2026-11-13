@@ -73,7 +73,7 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 <h2 style="color:#1F3A5F;border-bottom:3px solid #2F6FB0;padding-bottom:14px;font-size:50px;font-weight:700;line-height:1.2">シュレーディンガー方程式と拡散方程式の対応（虚数単位 i の有無）</h2>
 <table class="compact" style="font-family:'Noto Sans JP', Arial, sans-serif;font-size:24px;color:#111111;background:#FFFFFF">
 <tr><th style="width:20%">対象</th><th style="width:56%">基礎方程式</th><th style="width:24%">OpenFOAM のソルバ</th></tr>
-<tr><td>質点の古典力学</td><td style="font-size:22px;white-space:nowrap"><span class="tex">m\,\dfrac{d^2\boldsymbol{x}}{dt^2} = -\nabla V(\boldsymbol{x})</span></td><td>ニュートンの運動方程式（常微分方程式）</td></tr>
+<tr><td>質点の古典力学</td><td style="font-size:22px;white-space:nowrap"><span class="tex">m\,\dfrac{d^2\boldsymbol{x}}{dt^2} = -\nabla V(\boldsymbol{x})</span></td><td>ニュートンの運動方程式<br>（常微分方程式）</td></tr>
 <tr><td>熱伝導・拡散</td><td style="font-size:22px;white-space:nowrap"><span class="tex">\dfrac{\partial T}{\partial t} = \alpha\nabla^2 T</span></td><td>laplacianFoam</td></tr>
 <tr><td>流体（非圧縮）</td><td style="font-size:22px;white-space:nowrap"><span class="tex">\dfrac{\partial \boldsymbol{u}}{\partial t} + (\boldsymbol{u}\cdot\nabla)\boldsymbol{u} = -\dfrac{\nabla p}{\rho} + \nu\nabla^2\boldsymbol{u}</span></td><td>icoFoam など</td></tr>
 <tr><td>電磁場（マクスウェル）</td><td style="font-size:22px;white-space:nowrap"><span class="tex">\nabla\times\boldsymbol{E}=-\dfrac{\partial\boldsymbol{B}}{\partial t},\quad \nabla\times\boldsymbol{H}=\boldsymbol{J}+\dfrac{\partial\boldsymbol{D}}{\partial t}</span></td><td>electrostaticFoam、mhdFoam</td></tr>
