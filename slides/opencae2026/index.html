@@ -100,21 +100,23 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 <aside class="notes">本研究では、拡散方程式ソルバ laplacianFoam を改造して、シュレーディンガー方程式とGP方程式を解く schrodingerFoam を新しく作りました。ポイントは4つ。方程式、複素数の扱い、時間の解き方、そしてチュートリアルの整備です。</aside>
 </section>
 
-<section class="slide" id="eqs" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:32px">
+<section class="slide" id="eqs" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:20px">
 <p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム2026＠金沢　A51</p>
 <p style="font-size:26px;font-weight:700;color:#2F6FB0">基礎方程式</p>
-<h2 style="color:#1F3A5F;border-bottom:3px solid #2F6FB0;padding-bottom:14px;font-size:64px;font-weight:700;line-height:1.2">GP 方程式（g = 0 でシュレーディンガー方程式に帰着）</h2>
-<div style="background:#FFFFFF;border:1px solid #9DB8D9;border-radius:0;padding:32px;display:flex;flex-direction:column;gap:16px">
-<p style="font-size:30px;font-weight:700;color:#2F6FB0">時間依存シュレーディンガー方程式（<span class="tex">|\psi|^2</span> ＝ 存在確率密度、<span class="tex">\int|\psi|^2dV=1</span>）</p>
-<img src="img/eq_sch.png" alt="時間依存シュレーディンガー方程式" style="width:619px;height:103px;object-fit:contain">
-</div>
-<div style="background:#FFFFFF;border:1px solid #9DB8D9;border-radius:0;padding:32px;display:flex;flex-direction:column;gap:16px">
-<p style="font-size:30px;font-weight:700;color:#2F6FB0">グロス・ピタエフスキー（GP）方程式（BEC、<span class="tex">|\psi|^2</span> ＝ 粒子数密度、<span class="tex">\int|\psi|^2dV=N</span>）</p>
-<img src="img/eq_gp.png" alt="グロス・ピタエフスキー方程式" style="width:869px;height:103px;object-fit:contain">
-</div>
-<p style="font-size:32px;line-height:1.5">第 3 項 <span class="tex">g|\psi|^2</span> が非線形項（粒子間相互作用）。<b>1 つのソルバの設定（g）で 2 つの方程式を扱う。</b></p>
+<h2 style="color:#1F3A5F;border-bottom:3px solid #2F6FB0;padding-bottom:10px;font-size:54px;font-weight:700;line-height:1.2">GP 方程式（g = 0 でシュレーディンガー方程式に帰着）</h2>
+<div style="border:1px solid #9DB8D9;padding:8px 24px;display:flex;align-items:center;gap:24px"><div style="flex:1;display:flex;flex-direction:column;gap:8px;white-space:nowrap">
+<p style="font-size:30px;font-weight:700;color:#2F6FB0">時間依存シュレーディンガー方程式（粒子 1 個）</p>
+<img src="img/eq_sch.png" alt="時間依存シュレーディンガー方程式" style="width:619px;height:103px;object-fit:contain;object-position:left">
+<p style="font-size:22px;color:#333333;line-height:1.45"><span class="tex">-\tfrac{\hbar^2}{2m}\nabla^2</span>：運動エネルギー（波が広がろうとする）　<span class="tex">V</span>：外部ポテンシャル（障壁・井戸）<br><span class="tex">|\psi|^2</span> ＝ 存在確率密度、<span class="tex">\int|\psi|^2dV=1</span></p>
+</div><div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:2px"><img data-anim="img/anim_harmonic.gif" src="img/still_harmonic.png" alt="調和ポテンシャル中の波束（粒子1個の存在確率）が往復する様子" style="width:552px;height:230px;object-fit:contain"><p style="font-size:20px;color:#2F6FB0">粒子 1 個の <span class="tex">|\psi|^2</span>（例題 2 の計算結果）</p></div></div>
+<div style="border:1px solid #9DB8D9;padding:8px 24px;display:flex;align-items:center;gap:24px"><div style="flex:1;display:flex;flex-direction:column;gap:8px;white-space:nowrap">
+<p style="font-size:30px;font-weight:700;color:#2F6FB0">グロス・ピタエフスキー（GP）方程式（絶対零度の BEC）</p>
+<img src="img/eq_gp.png" alt="グロス・ピタエフスキー方程式" style="width:869px;height:103px;object-fit:contain;object-position:left">
+<p style="font-size:22px;color:#333333;line-height:1.45"><span class="tex">V_{\mathrm{ext}}</span>：原子を閉じ込めるトラップ　<span class="tex">g|\psi|^2</span>：周りの原子から受ける反発（非線形項）<br><span class="tex">|\psi|^2</span> ＝ 粒子数密度、<span class="tex">\int|\psi|^2dV=N</span><br>絶対零度では全原子が最低準位に入り、1 つの波 <span class="tex">\psi</span> で表せる</p>
+</div><img src="img/concept_levels.png" alt="エネルギー準位の図。高温では原子がいろいろな準位に分布し、絶対零度では全原子が最低準位に入ってBECになる" style="width:580px;height:241px;object-fit:contain;flex:none"></div>
+<p style="font-size:30px;line-height:1.4">第 3 項 <span class="tex">g|\psi|^2</span> が非線形項（粒子間相互作用）。<b>1 つのソルバの設定（g）で 2 つの方程式を扱う。</b></p>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">6 / 18</p>
-<aside class="notes">対象の方程式です。上が時間依存シュレーディンガー方程式。粒子間の相互作用を平均場で入れると、下のGP方程式になり、ボース・アインシュタイン凝縮体を記述します。第3項が非線形項で、g を 0 にすれば上の式に戻るので、1つのソルバで2つの方程式を扱えます。なお、同じ |ψ|² でも、シュレーディンガー方程式では存在確率、GP方程式では粒子数密度と意味が違う点に注意します。</aside>
+<aside class="notes">対象の方程式です。上が時間依存シュレーディンガー方程式で、粒子1個を表します。右のアニメーションは例題2の計算で、|ψ|² はその場所で粒子が見つかる確率です。第1項の運動エネルギーは波を広げようとし、第2項のポテンシャルは障壁や井戸です。粒子間の相互作用を平均場で入れると、下のGP方程式になり、ボース・アインシュタイン凝縮体（BEC）を記述します。GP方程式は基本的に絶対零度の BEC を表します。右のエネルギー準位の図のように、高温では原子がいろいろな準位に分布しますが、絶対零度では全原子が最低準位に入り、1つの波 ψ で表せます。|ψ|² は粒子数密度で、g|ψ|² は周りの原子から受ける反発です。第3項が非線形項で、g を 0 にすれば上の式に戻るので、1つのソルバで2つの方程式を扱えます。なお、同じ |ψ|² でも、シュレーディンガー方程式では存在確率、GP方程式では粒子数密度と意味が違う点に注意します。</aside>
 </section>
 
 <section class="slide" id="nondim" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
