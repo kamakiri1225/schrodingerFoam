@@ -70,7 +70,7 @@ def levels():
         ax.annotate("", (0.6, 8.4), (0.6, -0.3), arrowprops=dict(arrowstyle="-|>", color="k", lw=1.4))
         ax.text(0.15, 8.0, "$E$", fontsize=15, va="center", ha="right")
         ax.set_title(title, fontsize=14, color=col if col == RED else "k", pad=2)
-    axs[1].text(5.4, 3.0, "全原子が最低準位\n＝ BEC（1 つの波 $\\psi$）", fontsize=12.5, color=RED, ha="center", va="bottom",
+    axs[1].text(5.4, 2.3, "全原子が最低準位\n＝ ボース・アインシュタイン\n凝縮体（1 つの波 $\\psi$）", fontsize=12.5, color=RED, ha="center", va="bottom",
                 bbox=dict(fc="white", ec="none", pad=2))
     fig.subplots_adjust(wspace=0.08, left=0.01, right=0.99, top=0.88, bottom=0.02)
     fig.savefig(os.path.join(IMG, "concept_levels.png"), bbox_inches="tight", facecolor="white"); plt.close(fig)

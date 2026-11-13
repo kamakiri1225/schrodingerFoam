@@ -78,7 +78,7 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 <tr><td>流体（非圧縮）</td><td style="font-size:22px;white-space:nowrap"><span class="tex">\dfrac{\partial \boldsymbol{u}}{\partial t} + (\boldsymbol{u}\cdot\nabla)\boldsymbol{u} = -\dfrac{\nabla p}{\rho} + \nu\nabla^2\boldsymbol{u}</span></td><td>icoFoam など</td></tr>
 <tr><td>電磁場（マクスウェル）</td><td style="font-size:22px;white-space:nowrap"><span class="tex">\nabla\times\boldsymbol{E}=-\dfrac{\partial\boldsymbol{B}}{\partial t},\quad \nabla\times\boldsymbol{H}=\boldsymbol{J}+\dfrac{\partial\boldsymbol{D}}{\partial t}</span></td><td>electrostaticFoam、mhdFoam</td></tr>
 <tbody style="outline:5px solid #FF0000;outline-offset:-3px"><tr><td>量子力学</td><td style="font-size:22px;white-space:nowrap"><span class="tex">i\hbar\dfrac{\partial\psi}{\partial t} = -\dfrac{\hbar^2}{2m}\nabla^2\psi + V\psi</span></td><td>schrodingerFoam（本研究）</td></tr>
-<tr><td>量子流体（BEC）</td><td style="font-size:22px;white-space:nowrap"><span class="tex">i\hbar\dfrac{\partial\psi}{\partial t} = -\dfrac{\hbar^2}{2m}\nabla^2\psi + V\psi + g|\psi|^2\psi</span></td><td>schrodingerFoam（<i>g</i> ≠ 0）</td></tr></tbody><tbody>
+<tr><td>量子流体（ボース・<br>アインシュタイン凝縮体）</td><td style="font-size:22px;white-space:nowrap"><span class="tex">i\hbar\dfrac{\partial\psi}{\partial t} = -\dfrac{\hbar^2}{2m}\nabla^2\psi + V\psi + g|\psi|^2\psi</span></td><td>schrodingerFoam（<i>g</i> ≠ 0）</td></tr></tbody><tbody>
 <tr><td>相対論的量子（クライン–ゴルドン）</td><td style="font-size:22px;white-space:nowrap"><span class="tex">\dfrac{1}{c^2}\dfrac{\partial^2\psi}{\partial t^2}=\nabla^2\psi-\left(\dfrac{mc}{\hbar}\right)^2\psi</span></td><td>（同じ枠組みで実装可能）</td></tr>
 </table>
 <p style="font-size:28px;line-height:1.45">場の方程式は、どれも「時間微分 ＝ 空間微分（ラプラシアン・回転）＋ ソース項」の形。<br><b style="color:#C62828">→ シュレーディンガー方程式も、OpenFOAM で解けそう</b></p>
@@ -110,13 +110,13 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 <p style="font-size:22px;color:#333333;line-height:1.45"><span class="tex">-\tfrac{\hbar^2}{2m}\nabla^2</span>：運動エネルギー（波が広がろうとする）　<span class="tex">V</span>：外部ポテンシャル（障壁・井戸）<br><span class="tex">|\psi|^2</span> ＝ 存在確率密度、<span class="tex">\int|\psi|^2dV=1</span></p>
 </div><div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:2px"><img data-anim="img/anim_harmonic.gif" src="img/still_harmonic.png" alt="調和ポテンシャル中の波束（粒子1個の存在確率）が往復する様子" style="width:552px;height:230px;object-fit:contain"><p style="font-size:20px;color:#2F6FB0">粒子 1 個の <span class="tex">|\psi|^2</span>（例題 2 の計算結果）</p></div></div>
 <div style="border:1px solid #9DB8D9;padding:8px 24px;display:flex;align-items:center;gap:24px"><div style="flex:1;display:flex;flex-direction:column;gap:8px;white-space:nowrap">
-<p style="font-size:30px;font-weight:700;color:#2F6FB0">グロス・ピタエフスキー（GP）方程式（絶対零度の BEC）</p>
+<p style="font-size:30px;font-weight:700;color:#2F6FB0">GP 方程式（絶対零度のボース・アインシュタイン凝縮体）</p>
 <img src="img/eq_gp.png" alt="グロス・ピタエフスキー方程式" style="width:869px;height:103px;object-fit:contain;object-position:left">
 <p style="font-size:22px;color:#333333;line-height:1.45"><span class="tex">V_{\mathrm{ext}}</span>：原子を閉じ込めるトラップ　<span class="tex">g|\psi|^2</span>：周りの原子から受ける反発（非線形項）<br><span class="tex">|\psi|^2</span> ＝ 粒子数密度、<span class="tex">\int|\psi|^2dV=N</span><br>絶対零度では全原子が最低準位に入り、1 つの波 <span class="tex">\psi</span> で表せる</p>
-</div><img src="img/concept_levels.png" alt="エネルギー準位の図。高温では原子がいろいろな準位に分布し、絶対零度では全原子が最低準位に入ってBECになる" style="width:580px;height:241px;object-fit:contain;flex:none"></div>
+</div><img src="img/concept_levels.png" alt="エネルギー準位の図。高温では原子がいろいろな準位に分布し、絶対零度では全原子が最低準位に入ってボース・アインシュタイン凝縮体になる" style="width:580px;height:241px;object-fit:contain;flex:none"></div>
 <p style="font-size:30px;line-height:1.4">第 3 項 <span class="tex">g|\psi|^2</span> が非線形項（粒子間相互作用）。<b>1 つのソルバの設定（g）で 2 つの方程式を扱う。</b></p>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">6 / 18</p>
-<aside class="notes">対象の方程式です。上が時間依存シュレーディンガー方程式で、粒子1個を表します。右のアニメーションは例題2の計算で、|ψ|² はその場所で粒子が見つかる確率です。第1項の運動エネルギーは波を広げようとし、第2項のポテンシャルは障壁や井戸です。粒子間の相互作用を平均場で入れると、下のGP方程式になり、ボース・アインシュタイン凝縮体（BEC）を記述します。GP方程式は基本的に絶対零度の BEC を表します。右のエネルギー準位の図のように、高温では原子がいろいろな準位に分布しますが、絶対零度では全原子が最低準位に入り、1つの波 ψ で表せます。|ψ|² は粒子数密度で、g|ψ|² は周りの原子から受ける反発です。第3項が非線形項で、g を 0 にすれば上の式に戻るので、1つのソルバで2つの方程式を扱えます。なお、同じ |ψ|² でも、シュレーディンガー方程式では存在確率、GP方程式では粒子数密度と意味が違う点に注意します。</aside>
+<aside class="notes">対象の方程式です。上が時間依存シュレーディンガー方程式で、粒子1個を表します。右のアニメーションは例題2の計算で、|ψ|² はその場所で粒子が見つかる確率です。第1項の運動エネルギーは波を広げようとし、第2項のポテンシャルは障壁や井戸です。粒子間の相互作用を平均場で入れると、下のGP方程式になり、ボース・アインシュタイン凝縮体（BEC）を記述します。GP方程式は基本的に絶対零度のボース・アインシュタイン凝縮体を表します。右のエネルギー準位の図のように、高温では原子がいろいろな準位に分布しますが、絶対零度では全原子が最低準位に入り、1つの波 ψ で表せます。|ψ|² は粒子数密度で、g|ψ|² は周りの原子から受ける反発です。第3項が非線形項で、g を 0 にすれば上の式に戻るので、1つのソルバで2つの方程式を扱えます。なお、同じ |ψ|² でも、シュレーディンガー方程式では存在確率、GP方程式では粒子数密度と意味が違う点に注意します。</aside>
 </section>
 
 <section class="slide" id="nondim" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
@@ -285,14 +285,14 @@ for (int corr = 0; corr &lt; nCorr; ++corr)
 <div style="border:1px solid #9DB8D9;padding:6px 14px;display:flex;flex-direction:column;gap:2px"><p style="font-size:20px;font-weight:700;color:#1F3A5F">量子：きつい y 方向ほど速く広がる</p><p style="font-size:19px"><span class="tex">\Delta p_j=\dfrac{\hbar}{2\sigma_{j0}}\ \Rightarrow\ \sigma_j=\sigma_{j0}\sqrt{1+(\omega_j\tau)^2}</span></p></div></div>
 </div>
 <div style="border:3px solid #C62828;background:#FDF3F2;padding:14px 18px;display:flex;flex-direction:column;gap:10px">
-<p style="font-size:28px;font-weight:700;color:#C62828">先行研究：量子乱流の BEC は反転しない</p>
-<img src="img/ref_henn2009_expansion.png" alt="Henn ら 2009 の実験。解放後 5, 10, 15 ms の飛行時間像。左が通常のBEC、右が量子乱流のBEC" style="width:100%;height:240px;object-fit:contain;margin:0">
-<p style="font-size:22px;line-height:1.45">左：通常の BEC → 縦横比が<b>反転</b>（今回の計算と同じ）<br>右：量子乱流の BEC → <b>形を保ったまま膨張</b><br><b style="color:#C62828">仕組みはまだ未解明 → 次の研究テーマ</b>（17 ページ）</p>
+<p style="font-size:25px;font-weight:700;color:#C62828;white-space:nowrap">先行研究：量子乱流のボース・アインシュタイン凝縮体は反転しない</p>
+<img src="img/ref_henn2009_expansion.png" alt="Henn ら 2009 の実験。解放後 5, 10, 15 ms の飛行時間像。左が通常のボース・アインシュタイン凝縮体、右が量子乱流のボース・アインシュタイン凝縮体" style="width:100%;height:240px;object-fit:contain;margin:0">
+<p style="font-size:22px;line-height:1.45">左：通常の凝縮体 → 縦横比が<b>反転</b>（今回の計算と同じ）<br>右：量子乱流の凝縮体 → <b>形を保ったまま膨張</b><br><b style="color:#C62828">仕組みはまだ未解明 → 次の研究テーマ</b>（17 ページ）</p>
 <p style="font-size:16px;color:#555555">図：E. A. L. Henn et al., Phys. Rev. Lett. 103, 045301 (2009)</p>
 </div>
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">15 / 18</p>
-<aside class="notes">3つ目はトラップの開放です。x 方向にゆるく、y 方向にきつく閉じ込めた横長の雲を、t=2 で開放します。上段の古典粒子は速度分布が等方的なので、丸くなるだけで縦長にはなりません。下段の量子では、不確定性原理により、狭く閉じ込めていた y 方向ほど運動量の広がりが大きく、y 方向が速く膨張して縦長へ反転します。自由膨張の解析解と比べると、縦横比は解析どおり t=6 でほぼ1になり、その後縦長に反転しました。なお先行研究では、乱流状態のBECを開放すると、この縦横比の反転が起きず、形をほぼ保ったまま膨張することが実験で報告されています。渦の流れが異方的な膨張と競り合うという説明はありますが、仕組みはまだはっきりしておらず、これが次の研究テーマです。</aside>
+<aside class="notes">3つ目はトラップの開放です。x 方向にゆるく、y 方向にきつく閉じ込めた横長の雲を、t=2 で開放します。上段の古典粒子は速度分布が等方的なので、丸くなるだけで縦長にはなりません。下段の量子では、不確定性原理により、狭く閉じ込めていた y 方向ほど運動量の広がりが大きく、y 方向が速く膨張して縦長へ反転します。自由膨張の解析解と比べると、縦横比は解析どおり t=6 でほぼ1になり、その後縦長に反転しました。なお先行研究では、乱流状態のボース・アインシュタイン凝縮体を開放すると、この縦横比の反転が起きず、形をほぼ保ったまま膨張することが実験で報告されています。渦の流れが異方的な膨張と競り合うという説明はありますが、仕組みはまだはっきりしておらず、これが次の研究テーマです。</aside>
 </section>
 
 <section class="slide" id="soliton" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:16px">
