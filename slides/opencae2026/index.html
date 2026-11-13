@@ -344,6 +344,7 @@ for (int corr = 0; corr &lt; nCorr; ++corr)
 <p style="position:absolute;right:64px;top:40px;font-size:24px;color:#2F6FB0;white-space:nowrap">オープンCAEシンポジウム2026＠金沢　A51</p>
 <p style="font-size:26px;font-weight:700;color:#2F6FB0">まとめ</p>
 <h2 style="color:#1F3A5F;border-bottom:3px solid #2F6FB0;padding-bottom:14px;font-size:60px;font-weight:700;line-height:1.2;color:#111111">schrodingerFoam の開発と検証</h2>
+<p style="font-size:30px;color:#666666;margin-top:-16px">（「これを OpenFOAM でやる必要はあるのか？」というツッコミは、いったん置いておいて…）</p>
 <div style="display:flex;flex-direction:column;gap:22px">
 <p style="font-size:32px;line-height:1.5;color:#111111">① 複素波動関数を実部・虚部の 2 本の実数場に分け、既存の有限体積オペレータをそのまま流用</p>
 <p style="font-size:32px;line-height:1.5;color:#111111">② 前進オイラーは |G| &gt; 1 で発散。クランク・ニコルソン法でノルムを保存</p>
@@ -352,7 +353,7 @@ for (int corr = 0; corr &lt; nCorr; ++corr)
 </div>
 <p style="font-size:32px;font-weight:700;color:#C62828">今後：GP 方程式による量子流体（量子渦の生成・崩壊など）の計算を進める</p>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">18 / 18</p>
-<aside class="notes">まとめです。laplacianFoam を改造して schrodingerFoam を開発しました。複素数は実部と虚部に分けて既存のオペレータを流用し、実時間はクランク・ニコルソン法でノルムを保存、基底状態は虚時間発展で完全陰的に作り、1つのソルバのモード切替にまとめました。4つの例題をチュートリアルとして整備しています。今後は、GP方程式による量子流体の計算を進めていきます。ご清聴ありがとうございました。</aside>
+<aside class="notes">まとめです。「これを OpenFOAM でやる必要はあるのか？」というツッコミは、いったん置いておいて……。laplacianFoam を改造して schrodingerFoam を開発しました。複素数は実部と虚部に分けて既存のオペレータを流用し、実時間はクランク・ニコルソン法でノルムを保存、基底状態は虚時間発展で完全陰的に作り、1つのソルバのモード切替にまとめました。4つの例題をチュートリアルとして整備しています。今後は、GP方程式による量子流体の計算を進めていきます。ご清聴ありがとうございました。</aside>
 </section>
 
 </div>
