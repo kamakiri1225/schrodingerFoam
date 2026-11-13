@@ -190,7 +190,7 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:'N
 </div>
 <div style="display:grid;grid-template-columns:0.72fr 64px 1.28fr;gap:20px;align-items:center">
 <div style="display:flex;flex-direction:column;gap:8px">
-<p style="font-size:25px;font-weight:700;color:#2F6FB0">元の laplacianFoam（拡散方程式）</p>
+<p style="font-size:25px;font-weight:700;color:#2F6FB0">laplacianFoam（拡散方程式）</p>
 <p style="font-size:26px;color:#1F3A5F;padding:0 4px"><span class="tex">\dfrac{\partial T}{\partial t} = \nabla\cdot(D_T\nabla T)</span></p>
 <pre style="margin:0;background:#F5F8FC;border:1px solid #9DB8D9;padding:8px 14px;font-family:'Consolas','DejaVu Sans Mono',monospace;font-size:18px;line-height:1.25;color:#111111;white-space:pre"><span style="color:#1F5FBF;font-weight:700">fvm::ddt</span>(T) - <span style="color:#1F5FBF;font-weight:700">fvm::laplacian</span>(DT, T)
     == fvOptions(T)</pre>
@@ -218,7 +218,7 @@ for (int corr = 0; corr &lt; nCorr; ++corr)
 </div>
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#666666">11 / 18</p>
-<aside class="notes">まず右上が解く式です。W はポテンシャルで、障壁やトラップの外部ポテンシャル V_ext と、粒子間相互作用 g|ψ|² の和です。コードでは W を1つの場にまとめています。実際に書き換えたソースコードの一部です。左が元の laplacianFoam で、fvm::ddt と fvm::laplacian で拡散方程式を陰的に解く1式だけです。右が今回開発した schrodingerFoam です。虚時間モードでは、この式を実部 Psire と虚部 Psiim の2本にし、ポテンシャルと非線形項 W から μ を引いた項を fvm::SuSp で足しています。形は拡散方程式と同じなので、完全陰的にそのまま解けます。その下の実時間モードでは、u の時間変化は H v、v の時間変化はマイナス H u の2本を、クランク・ニコルソン法、つまり新旧の値の平均で更新します。右辺に未知の値が入るので、Picard 反復を nCorrectors 回まわしています。実時間と虚時間（初期状態づくり）は、設定ファイル constant/gpProperties の mode で切り替えます。g を 0 にすればシュレーディンガー方程式、0 以外なら GP 方程式です。</aside>
+<aside class="notes">まず右上が解く式です。W はポテンシャルで、障壁やトラップの外部ポテンシャル V_ext と、粒子間相互作用 g|ψ|² の和です。コードでは W を1つの場にまとめています。実際に書き換えたソースコードの一部です。左が laplacianFoam で、fvm::ddt と fvm::laplacian で拡散方程式を陰的に解く1式だけです。右が今回開発した schrodingerFoam です。虚時間モードでは、この式を実部 Psire と虚部 Psiim の2本にし、ポテンシャルと非線形項 W から μ を引いた項を fvm::SuSp で足しています。形は拡散方程式と同じなので、完全陰的にそのまま解けます。その下の実時間モードでは、u の時間変化は H v、v の時間変化はマイナス H u の2本を、クランク・ニコルソン法、つまり新旧の値の平均で更新します。右辺に未知の値が入るので、Picard 反復を nCorrectors 回まわしています。実時間と虚時間（初期状態づくり）は、設定ファイル constant/gpProperties の mode で切り替えます。g を 0 にすればシュレーディンガー方程式、0 以外なら GP 方程式です。</aside>
 </section>
 
 <section class="slide" id="cases" data-transition="fade" style="background:#FFFFFF;color:#111111;font-family:'Noto Sans JP', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:16px">
