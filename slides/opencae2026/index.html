@@ -321,18 +321,18 @@ for (int corr = 0; corr &lt; nCorr; ++corr)
 <p style="font-size:28px;font-weight:700;color:#1F3A5F">① アナロジー研究：古典流体と量子流体</p>
 <div style="display:flex;gap:16px;align-items:center">
 <img src="img/vortex_classical_vs_quantum.png" alt="古典流体のランキン渦と量子流体の量子渦の比較。循環は量子化され、渦芯が明確" style="width:480px;height:366px;object-fit:contain;flex:none">
-<div style="display:flex;flex-direction:column;gap:14px;font-size:22px;line-height:1.4"><p>古典：循環は任意、粘性で拡散</p><p>量子：循環が <span class="tex">\kappa=h/m</span> に量子化</p><p>GP：粘性項なし、<b>量子圧力項</b>あり</p></div></div>
+<div style="display:flex;flex-direction:column;gap:14px;font-size:22px;line-height:1.4;white-space:nowrap"><p>古典：循環は任意、<br>粘性で拡散</p><p>量子：循環が <span class="tex">\kappa=h/m</span><br>に量子化</p><p>GP：粘性項なし、<br><b>量子圧力項</b>あり</p></div></div>
 <p style="font-size:24px"><span class="tex">\text{NS:}\ \ \dfrac{D\boldsymbol{v}}{Dt} = -\dfrac{\nabla p}{\rho} + \nu\nabla^2\boldsymbol{v}</span></p>
 <p style="font-size:24px"><span class="tex">\text{GP:}\ \ \dfrac{D\boldsymbol{v}}{Dt} = -\dfrac{\nabla p}{mn} - \dfrac{\nabla V}{m} + \dfrac{1}{m}\nabla\!\left(\dfrac{\hbar^2}{2m}\dfrac{\nabla^2\sqrt{n}}{\sqrt{n}}\right)</span></p>
 </div>
 <div style="border:1px solid #9DB8D9;padding:16px 20px;display:flex;flex-direction:column;gap:10px">
 <p style="font-size:28px;font-weight:700;color:#1F3A5F">② KS-DFT：別ソルバ ksdftFoam を試作中</p>
 <p style="font-size:26px"><span class="tex">\left[-\tfrac12\nabla^2 + V_{\mathrm{ext}} + V_H[n] + V_{xc}[n]\right]\psi_i = \varepsilon_i\psi_i</span></p>
-<p style="font-size:24px"><span class="tex">n=\textstyle\sum_i|\psi_i|^2,\qquad \nabla^2 V_H = -4\pi n</span>　密度で V が変わる → 自己無撞着（SCF）反復</p>
+<p style="font-size:24px;white-space:nowrap"><span class="tex">n=\textstyle\sum_i|\psi_i|^2,\qquad \nabla^2 V_H = -4\pi n</span></p><p style="font-size:24px;white-space:nowrap">密度で V が変わる → 自己無撞着（SCF）反復</p>
 <table class="compact" style="font-family:'Noto Sans JP', Arial, sans-serif;font-size:22px;color:#111111;background:#FFFFFF">
 <tr><th>原子（ソフト Coulomb）</th><th></th><th>64³</th><th>外挿</th><th>参照解</th></tr>
 <tr><td>H（Coulomb のみ）</td><td><span class="tex">ε</span></td><td>−0.38388</td><td>−0.38093</td><td>−0.38087</td></tr><tr><td>He（＋Hartree）</td><td><span class="tex">E</span></td><td>−1.14917</td><td>−1.1426</td><td>−1.1418</td></tr><tr><td>He（＋LDA 交換）</td><td><span class="tex">E</span></td><td>−1.62681</td><td>−1.6163</td><td>−1.6147</td></tr></table>
-<p style="font-size:21px;color:#444444;line-height:1.45">単位 Hartree。同じモデルの径方向参照解と 2 次精度で一致。交換項で自己相互作用誤差が補正される。純 Coulomb での文献値比較はこれから</p>
+<p style="font-size:21px;color:#444444;line-height:1.45;white-space:nowrap">単位 Hartree。同じモデルの径方向参照解と 2 次精度で一致。<br>交換項で自己相互作用誤差が補正される。<br>純 Coulomb での文献値比較はこれから</p>
 </div>
 </div>
 <p style="font-size:26px">③ 有限温度では常流体成分との力の受け渡しを実装し、量子流体と古典流体の連成も OpenFOAM 内で扱う</p>
